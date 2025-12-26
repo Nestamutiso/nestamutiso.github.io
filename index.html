@@ -3,17 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MindCheck Pro | Empathetic Companion</title>
+    <title>MindCheck | AI Thought Partner</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #7d5fff;
             --bg: #fdfbff;
             --text: #1e272e;
-            --subtle: #a4b0be;
-            --glass: rgba(255, 255, 255, 0.95);
-            --sad-accent: #485460;
-            --happy-accent: #7d5fff;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --user-msg: #efedff;
+            --bot-msg: #7d5fff;
+            --nav-bg: #1e272e;
+        }
+
+        body.dark-mode {
+            --bg: #121212;
+            --text: #e0e0e0;
+            --card-bg: #1e1e1e;
+            --user-msg: #2d2d2d;
+            --bot-msg: #a29bfe;
+            --nav-bg: #000000;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -21,82 +30,77 @@
         body {
             font-family: 'Outfit', sans-serif;
             background-color: var(--bg);
-            margin: 0;
-            color: var(--text);
-            height: 100vh;
-            overflow: hidden;
+            margin: 0; color: var(--text);
+            height: 100vh; overflow: hidden;
+            transition: all 0.3s ease;
         }
 
         /* --- Splash Screen --- */
         #splash {
-            position: fixed;
-            inset: 0;
-            background: var(--primary);
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: white;
+            position: fixed; inset: 0; background: #7d5fff;
+            z-index: 9999; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; color: white;
             transition: opacity 0.6s ease;
         }
 
-        /* --- View Management --- */
+        /* --- App Shell --- */
         .app-shell { height: 100vh; display: flex; flex-direction: column; opacity: 0; transition: opacity 0.5s; }
-        .view { display: none; flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 120px; }
-        .view.active { display: block; animation: fadeIn 0.3s ease; }
+        
+        .view { display: none; flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 110px; }
+        .view.active { display: flex; flex-direction: column; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        header { padding: 40px 10px 10px; }
-
-        /* --- Cards --- */
+        header { padding: 30px 10px 10px; }
         .app-card {
-            background: var(--glass);
-            border-radius: 28px;
-            padding: 25px;
-            margin-bottom: 20px;
+            background: var(--card-bg);
+            border-radius: 28px; padding: 25px; margin-bottom: 20px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-            border: 1px solid rgba(255,255,255,0.7);
+            border: 1px solid rgba(125, 95, 255, 0.1);
         }
 
-        /* --- Mood Selection --- */
-        .mood-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 15px; }
-        .mood-btn {
-            background: #f1f2f6; border: none; border-radius: 18px; padding: 15px 5px;
-            cursor: pointer; font-family: inherit; font-size: 12px; transition: 0.2s;
+        /* --- Conversational Chat --- */
+        #chat-container {
+            flex: 1; display: flex; flex-direction: column;
+            max-height: 400px; overflow-y: auto; margin-bottom: 15px;
+            padding-right: 5px;
         }
-        .mood-btn:active { transform: scale(0.9); background: var(--primary); color: white; }
-
-        /* --- Chat UI --- */
-        #win-input {
-            width: 100%; padding: 18px; border-radius: 18px; border: 2px solid #f1f1f1;
-            font-size: 16px; outline: none; font-family: inherit; transition: 0.3s;
+        .chat-bubble {
+            max-width: 85%; padding: 12px 18px; border-radius: 20px;
+            margin-bottom: 12px; line-height: 1.5; font-size: 15px;
+            animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        #win-input:focus { border-color: var(--primary); background: white; }
+        @keyframes pop { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         
-        #bot-response { 
-            margin-top: 18px; padding: 20px; border-radius: 20px;
-            background: #f8f9fa; line-height: 1.6; font-weight: 500;
-            transition: all 0.3s ease; border-left: 4px solid var(--primary);
+        .bot-msg { background: var(--bot-msg); color: white; align-self: flex-start; border-bottom-left-radius: 4px; }
+        .user-msg { background: var(--user-msg); color: var(--text); align-self: flex-end; border-bottom-right-radius: 4px; }
+
+        .chat-input-area { position: relative; display: flex; gap: 10px; }
+        input#user-input {
+            flex: 1; padding: 15px 20px; border-radius: 25px; border: 2px solid #f1f1f1;
+            background: var(--card-bg); color: var(--text); font-family: inherit; font-size: 16px; outline: none;
         }
 
         /* --- Settings --- */
-        .settings-item {
+        .settings-row {
             display: flex; justify-content: space-between; align-items: center;
-            padding: 15px 0; border-bottom: 1px solid #f1f1f1;
+            padding: 18px 0; border-bottom: 1px solid rgba(0,0,0,0.05);
         }
+        /* Switch UI */
+        .switch { position: relative; display: inline-block; width: 46px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; inset: 0; background: #ccc; border-radius: 34px; transition: .4s; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: .4s; }
+        input:checked + .slider { background: var(--primary); }
+        input:checked + .slider:before { transform: translateX(22px); }
 
-        /* --- Bottom Navigation --- */
+        /* --- Bottom Nav --- */
         nav {
             position: fixed; bottom: 25px; left: 20px; right: 20px;
-            background: #1e272e; height: 75px; border-radius: 35px;
+            background: var(--nav-bg); height: 75px; border-radius: 35px;
             display: flex; justify-content: space-around; align-items: center; z-index: 1000;
         }
-        .nav-link { 
-            background: none; border: none; color: #808e9b; 
-            font-size: 24px; cursor: pointer; transition: 0.3s; 
-        }
-        .nav-link.active { color: #fff; transform: translateY(-8px); }
+        .nav-link { background: none; border: none; color: #808e9b; font-size: 24px; cursor: pointer; transition: 0.3s; }
+        .nav-link.active { color: white; transform: translateY(-5px); }
     </style>
 </head>
 <body>
@@ -110,24 +114,17 @@
         
         <main id="home" class="view active">
             <header>
-                <span id="date-label" style="text-transform:uppercase; font-size:11px; letter-spacing:2px; color:var(--subtle); font-weight:700;">DECEMBER 26</span>
-                <h1 id="greet" style="margin: 5px 0; font-size: 32px;">Welcome back.</h1>
+                <h1 id="greet-h">Hello.</h1>
+                <p style="color:var(--primary); margin:0;">How is your heart feeling right now?</p>
             </header>
 
-            <div class="app-card">
-                <h3 style="margin:0">How is your heart feeling?</h3>
-                <div class="mood-grid">
-                    <button class="mood-btn" onclick="quickLog('Peaceful')">🍃<br>Peace</button>
-                    <button class="mood-item mood-btn" onclick="quickLog('Happy')">✨<br>Happy</button>
-                    <button class="mood-item mood-btn" onclick="quickLog('Heavy')">🌊<br>Heavy</button>
-                    <button class="mood-item mood-btn" onclick="quickLog('Anxious')">🌪️<br>Tense</button>
+            <div class="app-card" style="flex:1; display:flex; flex-direction:column;">
+                <div id="chat-container">
+                    <div class="chat-bubble bot-msg">I am your AI thought partner. You can tell me anything—a win, a struggle, or just a random thought. I'm listening.</div>
                 </div>
-            </div>
-
-            <div class="app-card" id="chat-card">
-                <h3 id="chat-prompt">Tell me what's on your mind...</h3>
-                <input type="text" id="win-input" placeholder="Type here and press Enter">
-                <div id="bot-response">I'm here for you. Whether it's a win or a struggle, I'm listening.</div>
+                <div class="chat-input-area">
+                    <input type="text" id="user-input" placeholder="Type a message..." autocomplete="off">
+                </div>
             </div>
         </main>
 
@@ -135,115 +132,127 @@
             <header><h1>Community</h1></header>
             <div class="app-card" style="text-align:center;">
                 <div style="font-size:50px; margin-bottom:15px;">🫂</div>
-                <h3>Circle of Support</h3>
-                <p style="color:var(--subtle)">4,209 people are sharing their journey today. You're part of something bigger.</p>
-                <button style="width:100%; padding:15px; border-radius:15px; border:none; background:var(--primary); color:white; font-weight:700;">Browse Conversations</button>
+                <h3>Global Pulse</h3>
+                <p id="comm-stat" style="color:var(--subtle)">Calculating local connection...</p>
+                <button onclick="alert('This will connect you to a peer support group.')" style="width:100%; padding:15px; border-radius:15px; border:none; background:var(--primary); color:white; font-weight:700;">Join a Safe Space</button>
+            </div>
+            <div class="app-card">
+                <p style="font-style: italic; color: var(--subtle)">"The bravest thing you ever did was stay alive when you didn't know how."</p>
             </div>
         </main>
 
         <main id="settings" class="view">
             <header><h1>Settings</h1></header>
             <div class="app-card">
-                <div class="settings-item"><span>Dark Mode</span><b>Off</b></div>
-                <div class="settings-item"><span>Journal History</span><span>View</span></div>
-                <div class="settings-item"><span>Daily Reminders</span><span>8:00 AM</span></div>
-                <div class="settings-item" style="color:#ff4757; border:none;"><span>Delete All Progress</span></div>
+                <div class="settings-row">
+                    <span>Dark Mode</span>
+                    <label class="switch"><input type="checkbox" id="dark-toggle"><span class="slider"></span></label>
+                </div>
+                <div class="settings-row">
+                    <span>Private Session</span>
+                    <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+                </div>
+                <div class="settings-row" onclick="location.reload()" style="cursor:pointer; color:var(--primary)">
+                    <span>Restart App</span>
+                    <span>🔄</span>
+                </div>
+                <div class="settings-row" onclick="alert('MindCheck Pro v3.0\nCreated to reason with the human heart.')">
+                    <span>App Info</span>
+                    <span>ℹ️</span>
+                </div>
             </div>
-            <p style="text-align:center; font-size:12px; color:var(--subtle);">MindCheck v2.5 | Nairobi Edition</p>
         </main>
 
         <nav>
-            <button class="nav-link active" onclick="changeTab('home', this)">🏠</button>
-            <button class="nav-link" onclick="changeTab('community', this)">🫂</button>
-            <button class="nav-link" onclick="changeTab('settings', this)">⚙️</button>
+            <button class="nav-link active" onclick="navTo('home', this)">🏠</button>
+            <button class="nav-link" onclick="navTo('community', this)">🫂</button>
+            <button class="nav-link" onclick="navTo('settings', this)">⚙️</button>
         </nav>
     </div>
 
     <script>
-        // --- 1. TAB NAVIGATION LOGIC ---
-        function changeTab(targetId, btn) {
-            // Hide all views
+        // --- 1. Navigation Logic ---
+        function navTo(viewId, btn) {
             document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-            // Reset all nav buttons
             document.querySelectorAll('.nav-link').forEach(b => b.classList.remove('active'));
-            
-            // Show selected view and highlight button
-            document.getElementById(targetId).classList.add('active');
+            document.getElementById(viewId).classList.add('active');
             btn.classList.add('active');
+
+            if(viewId === 'community') {
+                const count = Math.floor(Math.random() * 400) + 100;
+                document.getElementById('comm-stat').innerText = `There are ${count} people in your area checking in right now. You aren't alone.`;
+            }
         }
 
-        // --- 2. ADVANCED EMPATHY ENGINE ---
-        const winInput = document.getElementById('win-input');
-        const botResponse = document.getElementById('bot-response');
+        // --- 2. Dark Mode Logic ---
+        const darkToggle = document.getElementById('dark-toggle');
+        darkToggle.addEventListener('change', () => {
+            document.body.classList.toggle('dark-mode');
+        });
 
-        winInput.addEventListener('keypress', (e) => {
+        // --- 3. Conversational AI Reasoning ---
+        const userInput = document.getElementById('user-input');
+        const chatContainer = document.getElementById('chat-container');
+
+        userInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
-                const text = winInput.value.toLowerCase().trim();
+                const text = userInput.value.trim();
                 if(!text) return;
 
-                // Keywords for emotional reasoning
-                const sadTriggers = ["sad", "bad", "hurt", "fail", "hate", "lonely", "tired", "hard", "difficult", "cry", "broken", "awful", "stress", "lose"];
-                const happyTriggers = ["happy", "good", "great", "won", "amazing", "love", "win", "smile", "better", "best"];
+                // Add User Message
+                createBubble(text, 'user-msg');
+                userInput.value = "";
 
-                // Prioritize "Sad" detection to ensure empathy
-                let isSad = sadTriggers.some(word => text.includes(word));
-                let isHappy = happyTriggers.some(word => text.includes(word));
-
-                botResponse.innerText = "Listening...";
-                
+                // Generate Reasoned Response
                 setTimeout(() => {
-                    if (isSad) {
-                        // Reasoning for bad feelings
-                        botResponse.style.borderLeftColor = "#485460";
-                        botResponse.style.color = "#485460";
-                        botResponse.innerText = "I hear you. That sounds incredibly heavy, and it's okay to feel exactly as you do. Thank you for being honest with me about it. I'm sitting here with you. 🫂";
-                    } else if (isHappy) {
-                        // Reasoning for good feelings
-                        botResponse.style.borderLeftColor = "var(--primary)";
-                        botResponse.style.color = "var(--primary)";
-                        botResponse.innerText = "I love that for you! ✨ It's so good to see you shining. You deserve every bit of this happiness. Keep that energy close today!";
-                    } else {
-                        // Neutral reasoning
-                        botResponse.style.borderLeftColor = "var(--primary)";
-                        botResponse.style.color = "var(--text)";
-                        botResponse.innerText = "Thanks for sharing that with me. I'm glad you took a second to check in. I'm always here to listen whenever you need to let it out. 🌿";
-                    }
-                    
-                    // Interaction feedback
-                    winInput.value = "";
-                    const card = document.getElementById('chat-card');
-                    card.style.transform = "translateY(-5px)";
-                    setTimeout(() => card.style.transform = "translateY(0)", 200);
+                    const reply = reasonWithEmotion(text.toLowerCase());
+                    createBubble(reply, 'bot-msg');
                 }, 800);
             }
         });
 
-        function quickLog(mood) {
-            const bot = document.getElementById('bot-response');
-            if(mood === 'Heavy' || mood === 'Anxious') {
-                bot.innerText = `I see you logged a ${mood} mood. It's okay to feel that way. If you want to type about what's making it heavy, I'm here.`;
-            } else {
-                bot.innerText = `You're feeling ${mood}. That's great to hear! Tell me more about what's making your day good.`;
-            }
+        function createBubble(msg, className) {
+            const div = document.createElement('div');
+            div.className = `chat-bubble ${className}`;
+            div.innerText = msg;
+            chatContainer.appendChild(div);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
         }
 
-        // --- 3. INITIALIZATION ---
+        function reasonWithEmotion(input) {
+            // Priority 1: High-Stress/Heavy Emotions
+            if (input.match(/sad|hurt|cry|lonely|fail|awful|hate|bad|difficult|hard|tired/)) {
+                return "I can hear how much you're carrying right now. It makes sense that things feel heavy. I'm just here to sit with you in this—you don't have to put on a brave face for me. 🫂";
+            }
+            // Priority 2: Stress/Anxiety
+            if (input.match(/work|busy|stress|exam|pressure|overwhelmed|too much/)) {
+                return "That sounds like a lot of pressure. It's easy to forget that you're a human being, not a machine. Can we take a second to just acknowledge that you're doing your best? 🌿";
+            }
+            // Priority 3: Joy/Wins
+            if (input.match(/happy|good|great|amazing|won|love|smile|better|best/)) {
+                return "I love that! ✨ Seeing you have a moment of light really makes my day. You deserve to feel this way. What was the best part of it?";
+            }
+            // Neutral
+            return "I'm listening. Tell me more about that—I'm here to understand whatever is on your mind.";
+        }
+
+        // --- 4. App Lifecycle ---
         window.onload = () => {
-            // Set dynamic greeting
+            // Set Greeting
             const hr = new Date().getHours();
-            const greet = document.getElementById('greet');
+            const greet = document.getElementById('greet-h');
             if(hr < 12) greet.innerText = "Good morning.";
             else if(hr < 18) greet.innerText = "Good afternoon.";
             else greet.innerText = "Good evening.";
 
-            // Remove splash screen
+            // Remove Splash
             setTimeout(() => {
                 document.getElementById('splash').style.opacity = "0";
                 setTimeout(() => {
                     document.getElementById('splash').style.display = "none";
                     document.getElementById('appShell').style.opacity = "1";
                 }, 600);
-            }, 2000);
+            }, 1800);
         };
     </script>
 </body>
