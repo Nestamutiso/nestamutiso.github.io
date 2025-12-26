@@ -3,224 +3,200 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MindCheck | Ultimate Edition</title>
+    <title>MindCheck Super App</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #7d5fff;
-            --bg: #fdfbff;
-            --text: #1e272e;
-            --card: #ffffff;
-            --user-bubble: #efedff;
-            --bot-bubble: #7d5fff;
-            --subtle: #a4b0be;
+            --primary: #7d5fff; --bg: #fdfbff; --text: #1e272e;
+            --card: #ffffff; --user-msg: #efedff; --bot-msg: #7d5fff;
+            --accent: #fffa65; --subtle: #a4b0be;
         }
-
         body.dark-mode {
-            --bg: #121212;
-            --text: #e0e0e0;
-            --card: #1e1e1e;
-            --user-bubble: #2d2d2d;
-            --bot-bubble: #a29bfe;
+            --bg: #121212; --text: #e0e0e0; --card: #1e1e1e;
+            --user-msg: #2d2d2d; --bot-msg: #a29bfe;
         }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Outfit', sans-serif; }
+        body { background: var(--bg); margin: 0; color: var(--text); height: 100vh; overflow: hidden; transition: 0.3s; }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        /* --- Auth Screen --- */
+        #auth-screen { position: fixed; inset: 0; background: var(--primary); z-index: 10000; display: flex; align-items: center; justify-content: center; }
+        .auth-card { background: white; padding: 40px; border-radius: 35px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.2); }
+        .auth-card input { width: 100%; padding: 15px; margin: 15px 0; border-radius: 15px; border: 2px solid #eee; outline: none; }
 
-        body {
-            font-family: 'Outfit', sans-serif;
-            background-color: var(--bg);
-            margin: 0; color: var(--text);
-            height: 100vh; overflow: hidden;
-            transition: background 0.4s ease;
-        }
-
-        /* --- Auth/Login Screen --- */
-        #auth-screen {
-            position: fixed; inset: 0; background: var(--primary); z-index: 10000;
-            display: flex; align-items: center; justify-content: center; padding: 20px;
-        }
-        .auth-card {
-            background: white; padding: 40px 30px; border-radius: 35px;
-            width: 100%; max-width: 380px; text-align: center;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
-        }
-        .auth-card input {
-            width: 100%; padding: 15px; margin: 15px 0; border-radius: 15px;
-            border: 2px solid #eee; outline: none; font-size: 16px;
-        }
-        .auth-btn {
-            width: 100%; padding: 15px; background: var(--primary);
-            color: white; border: none; border-radius: 15px;
-            font-weight: 700; cursor: pointer;
-        }
-
-        /* --- App Structure --- */
+        /* --- App Shell --- */
         .app-shell { height: 100vh; display: none; flex-direction: column; }
-        header { padding: 40px 25px 10px; flex-shrink: 0; }
-        .view { display: none; flex: 1; overflow-y: auto; padding: 10px 20px 120px; }
+        .view { display: none; flex: 1; overflow-y: auto; padding: 20px 20px 120px; }
         .view.active { display: flex; flex-direction: column; animation: slideUp 0.4s ease; }
-
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } }
 
+        header { padding: 20px 5px; flex-shrink: 0; }
+        .app-card { background: var(--card); border-radius: 25px; padding: 20px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+
         /* --- Chat Interface --- */
-        #chat-log {
-            flex: 1; overflow-y: auto; display: flex; flex-direction: column;
-            gap: 15px; padding: 10px 0;
-        }
+        #chat-log { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; margin-bottom: 10px; }
         .bubble { max-width: 85%; padding: 14px 18px; border-radius: 22px; font-size: 15px; line-height: 1.5; }
-        .bot { background: var(--bot-bubble); color: white; align-self: flex-start; border-bottom-left-radius: 4px; }
-        .user { background: var(--user-bubble); color: var(--text); align-self: flex-end; border-bottom-right-radius: 4px; }
+        .bot { background: var(--bot-msg); color: white; align-self: flex-start; border-bottom-left-radius: 4px; }
+        .user { background: var(--user-msg); color: var(--text); align-self: flex-end; border-bottom-right-radius: 4px; }
 
-        .input-container {
-            background: var(--card); padding: 12px; border-radius: 25px;
-            display: flex; align-items: center; gap: 10px; 
-            box-shadow: 0 5px 20px rgba(0,0,0,0.05); margin-top: 10px;
-        }
-        #user-input { flex: 1; border: none; background: transparent; color: var(--text); font-size: 16px; outline: none; }
+        .input-bar { background: var(--card); padding: 10px; border-radius: 30px; display: flex; align-items: center; gap: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        #user-input { flex: 1; border: none; background: transparent; color: var(--text); padding: 10px; outline: none; font-size: 16px; }
 
-        /* --- Navigation --- */
-        nav {
-            position: fixed; bottom: 25px; left: 20px; right: 20px;
-            background: #1e272e; height: 75px; border-radius: 35px;
-            display: flex; justify-content: space-around; align-items: center;
-        }
-        .nav-link { background: none; border: none; color: #808e9b; font-size: 24px; cursor: pointer; transition: 0.3s; }
-        .nav-link.active { color: white; transform: translateY(-5px); }
+        /* --- Zen Circle --- */
+        .zen-circle { width: 100px; height: 100px; border: 4px solid var(--primary); border-radius: 50%; margin: 20px auto; transition: 4s ease-in-out; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--primary); }
 
-        .settings-card { background: var(--card); border-radius: 25px; padding: 25px; margin-bottom: 20px; }
-        .s-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid rgba(0,0,0,0.05); }
+        /* --- Bottom Nav --- */
+        nav { position: fixed; bottom: 25px; left: 20px; right: 20px; background: #1e272e; height: 75px; border-radius: 38px; display: flex; justify-content: space-around; align-items: center; z-index: 1000; }
+        .nav-btn { background: none; border: none; color: #808e9b; font-size: 24px; cursor: pointer; transition: 0.3s; }
+        .nav-btn.active { color: white; transform: translateY(-5px); }
     </style>
 </head>
 <body>
 
     <div id="auth-screen">
         <div class="auth-card">
-            <h1>🌿</h1>
-            <h2>MindCheck</h2>
-            <p>Enter your name to start our conversation.</p>
-            <input type="text" id="username" placeholder="Your Name">
-            <button class="auth-btn" onclick="login()">Enter</button>
+            <h1 style="margin:0">🌿</h1>
+            <h2>MindCheck Super App</h2>
+            <input type="text" id="username" placeholder="Enter Your Name">
+            <button onclick="login()" style="width:100%; padding:15px; background:var(--primary); color:white; border:none; border-radius:15px; font-weight:700; cursor:pointer;">Launch App</button>
         </div>
     </div>
 
     <div class="app-shell" id="app-shell">
         <main id="home" class="view active">
-            <header>
-                <span id="date-label" style="font-size: 11px; color: var(--subtle); font-weight: 700;"></span>
-                <h1 id="greeting" style="margin: 5px 0;">Hello.</h1>
-            </header>
+            <header><h1 id="greet" style="margin:0">Hi</h1></header>
             <div id="chat-log"></div>
-            <div class="input-container">
-                <input type="text" id="user-input" placeholder="What's on your mind?" autocomplete="off">
-                <button onclick="sendMsg()" style="background:var(--primary); color:white; border:none; width:45px; height:45px; border-radius:50%; cursor:pointer;">↑</button>
+            <div class="input-bar">
+                <input type="text" id="user-input" placeholder="Talk to me..." autocomplete="off">
+                <button onclick="send()" style="background:var(--primary); color:white; border:none; width:45px; height:45px; border-radius:50%; cursor:pointer;">↑</button>
+            </div>
+        </main>
+
+        <main id="insights" class="view">
+            <header><h1>Health Insights</h1></header>
+            <div class="app-card">
+                <h3>Vibe Check</h3>
+                <p id="vibe-text" style="color:var(--subtle)">Start a chat to generate your vibe.</p>
+                <button onclick="updateVibe()" style="width:100%; padding:10px; border-radius:12px; border:none; background:var(--primary); color:white;">Refresh Insights</button>
+            </div>
+            <div class="app-card" style="text-align:center;">
+                <h3>Zen Space</h3>
+                <div id="zen" class="zen-circle">Ready</div>
+                <button onclick="startZen()" style="border:none; background:none; color:var(--primary); font-weight:bold; cursor:pointer;">Start Breathing Exercise</button>
             </div>
         </main>
 
         <main id="settings" class="view">
-            <header><h1>Profile & Insights</h1></header>
-            <div class="settings-card">
-                <h3>Vibe Check</h3>
-                <p id="vibe-summary" style="color:var(--subtle); font-size: 14px;">Log a message to see your vibe summary.</p>
-                <button onclick="runVibeCheck()" style="width:100%; padding:12px; border:none; border-radius:12px; background:var(--primary); color:white; font-weight:700;">Refresh Vibe</button>
-            </div>
-            <div class="settings-card">
-                <div class="s-row"><span>User</span><b id="user-disp"></b></div>
-                <div class="s-row"><span>Dark Mode</span><button onclick="toggleDark()" style="border:none; padding:5px 12px; border-radius:8px;">Toggle</button></div>
-                <div class="s-row" onclick="logout()" style="color:red; cursor:pointer; border:none;"><span>Logout</span></div>
+            <header><h1>Settings</h1></header>
+            <div class="app-card">
+                <p>User: <b id="u-display">...</b></p>
+                <div style="display:flex; justify-content: space-between; align-items: center; padding: 10px 0;">
+                    <span>Dark Mode</span>
+                    <button onclick="document.body.classList.toggle('dark-mode')" style="padding:5px 15px; border-radius:10px; border:none;">Toggle</button>
+                </div>
+                <button onclick="localStorage.clear(); location.reload();" style="width:100%; padding:15px; background:#ffebee; color:red; border:none; border-radius:15px; margin-top:20px;">Logout & Clear Memory</button>
             </div>
         </main>
 
         <nav>
-            <button class="nav-link active" onclick="gotoTab('home', this)">🏠</button>
-            <button class="nav-link" onclick="gotoTab('settings', this)">📊</button>
+            <button class="nav-btn active" onclick="tab('home', this)">🏠</button>
+            <button class="nav-btn" onclick="tab('insights', this)">📊</button>
+            <button class="nav-btn" onclick="tab('settings', this)">⚙️</button>
         </nav>
     </div>
 
     <script>
         let userName = "";
-        let chatMemory = { lastTopic: "", moodScore: 0 }; // Positive score = happy, Negative = sad
+        let moodScore = 0;
+        let lastTopic = "";
+
+        const AI = {
+            sad: ["I hear you, and I can tell things are heavy right now. It's okay to sit with that—I'm right here. What's the toughest part of it today?", "I feel the weight in your words. You don't have to 'be strong' with me. Tell me more about what happened.", "That sounds incredibly hard. I'm listening. Does this feel like a new struggle, or something you've been carrying for a while?"],
+            happy: ["That is a huge win! ✨ I'm genuinely happy to see you in this headspace. What was the highlight of it all?", "I love that for you! Keep protecting that peace. How are you going to celebrate yourself today?", "That's wonderful! It’s great when things start to align. What's one thing you're grateful for right now?"],
+            neutral: ["I'm following you. Go on—I want to understand the full picture.", "I see. How does that make you feel about your week ahead?", "Thanks for checking in with me. I'm glad you're being honest with how things are."]
+        };
 
         function login() {
-            const input = document.getElementById('username').value;
-            if(!input.trim()) return;
-            userName = input;
-            localStorage.setItem('mindcheck_v5_user', userName);
+            userName = document.getElementById('username').value;
+            if(!userName) return;
+            localStorage.setItem('mind_super_user', userName);
             document.getElementById('auth-screen').style.display = 'none';
             document.getElementById('app-shell').style.display = 'flex';
-            document.getElementById('user-disp').innerText = userName;
-            startApp();
+            document.getElementById('u-display').innerText = userName;
+            init();
         }
 
-        function logout() { localStorage.clear(); location.reload(); }
-
-        function startApp() {
+        function init() {
             const hr = new Date().getHours();
-            const greet = hr < 12 ? "Good morning" : hr < 18 ? "Good afternoon" : "Good evening";
-            document.getElementById('greeting').innerText = `${greet}, ${userName}`;
-            document.getElementById('date-label').innerText = new Date().toLocaleDateString('en-US', {weekday:'long', month:'short', day:'numeric'});
-            addBubble(`Hi ${userName}. I've been waiting to hear from you. How are you feeling today?`, 'bot');
+            document.getElementById('greet').innerText = (hr < 12 ? "Morning, " : hr < 18 ? "Afternoon, " : "Evening, ") + userName;
+            addBubble(`Hey ${userName}, it's good to see you. I'm your AI thought partner. How are you feeling, really?`, 'bot');
         }
 
-        function gotoTab(id, btn) {
+        function tab(id, btn) {
             document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-            document.querySelectorAll('.nav-link').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(id).classList.add('active');
             btn.classList.add('active');
         }
 
-        function sendMsg() {
+        function send() {
             const input = document.getElementById('user-input');
-            const text = input.value.trim();
-            if(!text) return;
-            addBubble(text, 'user');
+            const val = input.value.trim();
+            if(!val) return;
+            addBubble(val, 'user');
             input.value = "";
             setTimeout(() => {
-                const reply = reason(text.toLowerCase());
+                const reply = reason(val.toLowerCase());
                 addBubble(reply, 'bot');
-            }, 800);
+            }, 1000);
         }
 
-        function addBubble(msg, side) {
+        function addBubble(txt, side) {
             const log = document.getElementById('chat-log');
             const div = document.createElement('div');
             div.className = `bubble ${side}`;
-            div.innerText = msg;
+            div.innerText = txt;
             log.appendChild(div);
             log.scrollTop = log.scrollHeight;
         }
 
         function reason(input) {
-            if(input.match(/sad|hurt|lonely|tired|fail|hard|difficult|awful|bad|cry/)) {
-                chatMemory.moodScore -= 1;
-                chatMemory.lastTopic = "some heavy emotions";
-                return `I hear the weight in that. It's okay to not be okay, ${userName}. I'm here to sit with you in this. What's the toughest part of it right now?`;
+            if (input.includes("remember")) return lastTopic ? `Of course. We were talking about ${lastTopic}. How are you processing that now?` : "I'm listening to everything you tell me—I haven't forgotten our talk!";
+            
+            let pool = AI.neutral;
+            if (input.match(/sad|hurt|fail|lonely|tired|bad|difficult|cry|heavy/)) {
+                pool = AI.sad; moodScore--; lastTopic = "the difficult emotions you're facing";
+            } else if (input.match(/happy|good|great|won|amazing|love|win/)) {
+                pool = AI.happy; moodScore++; lastTopic = "the wins you shared";
             }
-            if(input.match(/happy|good|great|amazing|love|win|smile|won/)) {
-                chatMemory.moodScore += 1;
-                chatMemory.lastTopic = "a positive win";
-                return `That's wonderful! ✨ It makes me genuinely happy to see you in this space. Hold onto that light. What was the best part of that moment?`;
-            }
-            if(input.includes("remember") || input.includes("last time")) {
-                return chatMemory.lastTopic ? `Of course. We were talking about ${chatMemory.lastTopic}. How has that been since?` : "I'm listening closely to our talk right now!";
-            }
-            return "I'm following you. Tell me more—I want to understand your perspective better.";
+            return pool[Math.floor(Math.random() * pool.length)];
         }
 
-        function runVibeCheck() {
-            const summary = document.getElementById('vibe-summary');
-            if(chatMemory.moodScore < 0) summary.innerText = "Current Vibe: Reflective & Tender. You've been navigating some heavy thoughts. Remember to be kind to yourself.";
-            else if(chatMemory.moodScore > 0) summary.innerText = "Current Vibe: Bright & Growing. You're focusing on the wins today! Keep protecting that peace.";
-            else summary.innerText = "Current Vibe: Balanced. You're checking in and staying present. That's a win in itself.";
+        function updateVibe() {
+            const text = document.getElementById('vibe-text');
+            if(moodScore < 0) text.innerText = "Current Vibe: Reflective & Tender. You've been carrying a lot. Be gentle with yourself.";
+            else if(moodScore > 0) text.innerText = "Current Vibe: Radiant & Positive. You're building momentum!";
+            else text.innerText = "Current Vibe: Balanced. You're doing the work to stay present.";
         }
 
-        function toggleDark() { document.body.classList.toggle('dark-mode'); }
+        function startZen() {
+            const circle = document.getElementById('zen');
+            let cycle = 0;
+            const run = () => {
+                if(cycle >= 2) { circle.style.transform = "scale(1)"; circle.innerText = "Peace"; return; }
+                circle.innerText = "Inhale"; circle.style.transform = "scale(1.6)";
+                setTimeout(() => { circle.innerText = "Hold"; }, 4000);
+                setTimeout(() => { circle.innerText = "Exhale"; circle.style.transform = "scale(1)"; }, 7000);
+                cycle++; setTimeout(run, 11000);
+            };
+            run();
+        }
 
         window.onload = () => {
-            const saved = localStorage.getItem('mindcheck_v5_user');
+            const saved = localStorage.getItem('mind_super_user');
             if(saved) { document.getElementById('username').value = saved; login(); }
         }
 
-        document.getElementById('user-input').addEventListener('keypress', e => { if(e.key === 'Enter') sendMsg(); });
+        document.getElementById('user-input').addEventListener('keypress', e => { if(e.key === 'Enter') send(); });
     </script>
 </body>
 </html>
