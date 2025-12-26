@@ -3,16 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MindCheck | Empathy AI</title>
+    <title>MindCheck Pro | Empathetic Companion</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #fdfbff;
             --primary: #7d5fff;
-            --text-main: #1e272e;
+            --bg: #fdfbff;
+            --text: #1e272e;
             --subtle: #a4b0be;
-            --glass: rgba(255, 255, 255, 0.9);
-            --shadow: 0 10px 30px rgba(125, 95, 255, 0.1);
+            --glass: rgba(255, 255, 255, 0.95);
+            --sad-accent: #485460;
+            --happy-accent: #7d5fff;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -21,7 +22,7 @@
             font-family: 'Outfit', sans-serif;
             background-color: var(--bg);
             margin: 0;
-            color: var(--text-main);
+            color: var(--text);
             height: 100vh;
             overflow: hidden;
         }
@@ -31,227 +32,219 @@
             position: fixed;
             inset: 0;
             background: var(--primary);
-            z-index: 2000;
+            z-index: 9999;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             color: white;
-            transition: opacity 0.8s ease-out;
+            transition: opacity 0.6s ease;
         }
 
-        /* --- Layout & Tabs --- */
+        /* --- View Management --- */
         .app-shell { height: 100vh; display: flex; flex-direction: column; opacity: 0; transition: opacity 0.5s; }
-        
-        header { 
-            padding: 40px 25px 20px; 
-            background: white;
-            border-radius: 0 0 30px 30px;
-            transition: background 0.8s ease;
-        }
+        .view { display: none; flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 120px; }
+        .view.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .view { display: none; flex: 1; overflow-y: auto; padding: 10px 20px 130px; }
-        .view.active { display: block; animation: fadeIn 0.4s ease; }
+        header { padding: 40px 10px 10px; }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-
+        /* --- Cards --- */
         .app-card {
             background: var(--glass);
-            backdrop-filter: blur(20px);
-            border-radius: 30px;
+            border-radius: 28px;
             padding: 25px;
             margin-bottom: 20px;
-            box-shadow: var(--shadow);
-            border: 1px solid rgba(255,255,255,0.6);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            border: 1px solid rgba(255,255,255,0.7);
         }
 
-        /* --- Mood Grid --- */
+        /* --- Mood Selection --- */
         .mood-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 15px; }
-        .mood-item {
-            background: #f1f2f6; border-radius: 20px; padding: 15px 5px; border: none;
-            cursor: pointer; transition: 0.2s; font-family: inherit; font-size: 13px; font-weight: 500;
+        .mood-btn {
+            background: #f1f2f6; border: none; border-radius: 18px; padding: 15px 5px;
+            cursor: pointer; font-family: inherit; font-size: 12px; transition: 0.2s;
         }
-        .mood-item:active { transform: scale(0.9); background: var(--primary); color: white; }
+        .mood-btn:active { transform: scale(0.9); background: var(--primary); color: white; }
 
-        /* --- Input & Chat --- */
-        .input-group { position: relative; margin-top: 15px; }
+        /* --- Chat UI --- */
         #win-input {
-            width: 100%; padding: 18px; border-radius: 20px; border: 1px solid #eee;
-            font-size: 16px; outline: none; background: #f8f9fa; font-family: inherit;
+            width: 100%; padding: 18px; border-radius: 18px; border: 2px solid #f1f1f1;
+            font-size: 16px; outline: none; font-family: inherit; transition: 0.3s;
         }
-        #bot-response { margin-top: 18px; font-size: 15px; line-height: 1.6; color: var(--primary); font-weight: 500; }
+        #win-input:focus { border-color: var(--primary); background: white; }
+        
+        #bot-response { 
+            margin-top: 18px; padding: 20px; border-radius: 20px;
+            background: #f8f9fa; line-height: 1.6; font-weight: 500;
+            transition: all 0.3s ease; border-left: 4px solid var(--primary);
+        }
 
-        /* --- Settings Row --- */
-        .settings-row { 
+        /* --- Settings --- */
+        .settings-item {
             display: flex; justify-content: space-between; align-items: center;
-            padding: 15px 0; border-bottom: 1px solid #f1f1f1; 
+            padding: 15px 0; border-bottom: 1px solid #f1f1f1;
         }
 
-        /* --- Bottom Nav --- */
+        /* --- Bottom Navigation --- */
         nav {
             position: fixed; bottom: 25px; left: 20px; right: 20px;
             background: #1e272e; height: 75px; border-radius: 35px;
             display: flex; justify-content: space-around; align-items: center; z-index: 1000;
         }
-        .nav-btn { color: #808e9b; text-decoration: none; font-size: 24px; cursor: pointer; border: none; background: none; transition: 0.3s; }
-        .nav-btn.active { color: white; transform: translateY(-5px); }
+        .nav-link { 
+            background: none; border: none; color: #808e9b; 
+            font-size: 24px; cursor: pointer; transition: 0.3s; 
+        }
+        .nav-link.active { color: #fff; transform: translateY(-8px); }
     </style>
 </head>
 <body>
 
     <div id="splash">
         <div style="font-size:80px">🌿</div>
-        <h2 style="letter-spacing:4px; font-weight:300;">MINDCHECK</h2>
+        <h1 style="letter-spacing:5px; font-weight:300;">MINDCHECK</h1>
     </div>
 
     <div class="app-shell" id="appShell">
-        <header id="appHeader">
-            <span id="date-label" style="text-transform:uppercase; font-size:11px; letter-spacing:1px; color:var(--subtle); font-weight:700;">DECEMBER 26</span>
-            <h1 id="greeting-text" style="margin: 8px 0; font-size: 30px;">Welcome back.</h1>
-        </header>
+        
+        <main id="home" class="view active">
+            <header>
+                <span id="date-label" style="text-transform:uppercase; font-size:11px; letter-spacing:2px; color:var(--subtle); font-weight:700;">DECEMBER 26</span>
+                <h1 id="greet" style="margin: 5px 0; font-size: 32px;">Welcome back.</h1>
+            </header>
 
-        <main id="home-view" class="view active">
             <div class="app-card">
-                <h3 style="margin:0">How is your heart today?</h3>
+                <h3 style="margin:0">How is your heart feeling?</h3>
                 <div class="mood-grid">
-                    <button class="mood-item" onclick="handleMood('Peaceful', '#7d5fff22')">🍃<br>Peace</button>
-                    <button class="mood-item" onclick="handleMood('Happy', '#f9ca2422')">✨<br>Happy</button>
-                    <button class="mood-item" onclick="handleMood('Heavy', '#48546022')">🌊<br>Heavy</button>
-                    <button class="mood-item" onclick="handleMood('Lonely', '#575fcf22')">☁️<br>Lonely</button>
+                    <button class="mood-btn" onclick="quickLog('Peaceful')">🍃<br>Peace</button>
+                    <button class="mood-item mood-btn" onclick="quickLog('Happy')">✨<br>Happy</button>
+                    <button class="mood-item mood-btn" onclick="quickLog('Heavy')">🌊<br>Heavy</button>
+                    <button class="mood-item mood-btn" onclick="quickLog('Anxious')">🌪️<br>Tense</button>
                 </div>
             </div>
 
-            <div class="app-card" id="journal-card">
-                <h3 id="journal-title">Tell me what's on your mind...</h3>
-                <div class="input-group">
-                    <input type="text" id="win-input" placeholder="Type a message...">
-                </div>
-                <p id="bot-response">I'm listening. Press enter to chat.</p>
+            <div class="app-card" id="chat-card">
+                <h3 id="chat-prompt">Tell me what's on your mind...</h3>
+                <input type="text" id="win-input" placeholder="Type here and press Enter">
+                <div id="bot-response">I'm here for you. Whether it's a win or a struggle, I'm listening.</div>
             </div>
         </main>
 
-        <main id="community-view" class="view">
-            <div class="app-card" style="text-align: center;">
-                <div style="font-size: 40px; margin-bottom: 10px;">🫂</div>
-                <h3>Kindness Community</h3>
-                <p style="color:var(--subtle)">You aren't alone. There are 4,203 others checking in right now.</p>
-                <button class="mood-item" style="width:100%; background:var(--primary); color:white; padding:15px; margin-top:10px;">Visit Support Forums</button>
+        <main id="community" class="view">
+            <header><h1>Community</h1></header>
+            <div class="app-card" style="text-align:center;">
+                <div style="font-size:50px; margin-bottom:15px;">🫂</div>
+                <h3>Circle of Support</h3>
+                <p style="color:var(--subtle)">4,209 people are sharing their journey today. You're part of something bigger.</p>
+                <button style="width:100%; padding:15px; border-radius:15px; border:none; background:var(--primary); color:white; font-weight:700;">Browse Conversations</button>
             </div>
         </main>
 
-        <main id="settings-view" class="view">
+        <main id="settings" class="view">
+            <header><h1>Settings</h1></header>
             <div class="app-card">
-                <h3>Preferences</h3>
-                <div class="settings-row"><span>Dark Mode</span><input type="checkbox"></div>
-                <div class="settings-row"><span>Daily Reminders</span><span>On</span></div>
-                <div class="settings-row"><span>Notification Tone</span><span>Soft Bell</span></div>
-                <div class="settings-row" style="color:#eb4d4b; border:none; margin-top:10px;"><span>Log Out</span></div>
+                <div class="settings-item"><span>Dark Mode</span><b>Off</b></div>
+                <div class="settings-item"><span>Journal History</span><span>View</span></div>
+                <div class="settings-item"><span>Daily Reminders</span><span>8:00 AM</span></div>
+                <div class="settings-item" style="color:#ff4757; border:none;"><span>Delete All Progress</span></div>
             </div>
-            <div style="text-align:center; color:var(--subtle); font-size:12px;">MindCheck v2.0 - Empathy Engine Active</div>
+            <p style="text-align:center; font-size:12px; color:var(--subtle);">MindCheck v2.5 | Nairobi Edition</p>
         </main>
 
         <nav>
-            <button class="nav-btn active" onclick="switchTab('home', this)">🏠</button>
-            <button class="nav-btn" onclick="switchTab('community', this)">🫂</button>
-            <button class="nav-btn" onclick="switchTab('settings', this)">⚙️</button>
+            <button class="nav-link active" onclick="changeTab('home', this)">🏠</button>
+            <button class="nav-link" onclick="changeTab('community', this)">🫂</button>
+            <button class="nav-link" onclick="changeTab('settings', this)">⚙️</button>
         </nav>
     </div>
 
     <script>
-        // --- 1. Navigation Controller ---
-        function switchTab(tabId, btnElement) {
-            // Remove active classes
+        // --- 1. TAB NAVIGATION LOGIC ---
+        function changeTab(targetId, btn) {
+            // Hide all views
             document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            // Reset all nav buttons
+            document.querySelectorAll('.nav-link').forEach(b => b.classList.remove('active'));
             
-            // Activate target
-            document.getElementById(tabId + '-view').classList.add('active');
-            btnElement.classList.add('active');
+            // Show selected view and highlight button
+            document.getElementById(targetId).classList.add('active');
+            btn.classList.add('active');
         }
 
-        // --- 2. Emotional Intelligence Engine ---
-        const chatPool = {
-            sad: [
-                "I hear you. It's okay to not be okay right now. I'm just sitting here with you. 🫂",
-                "That sounds really heavy. I'm so sorry things are tough. Thank you for trusting me with this.",
-                "I'm listening. Don't feel like you have to be 'positive' for me. Just be you. ❤️",
-                "Take a deep breath. You don't have to figure it all out today. You're doing enough."
-            ],
-            happy: [
-                "I love that for you! It's so good to see you shining. ✨",
-                "That's wonderful! You deserve all these good vibes. Keep that energy going.",
-                "Thank you for sharing that happiness with me. It made my day better too! 😊"
-            ],
-            neutral: [
-                "I'm glad you're checking in. I'm always here if you need to talk more.",
-                "Thanks for sharing that with me. Every thought you have matters here.",
-                "Got it. Remember, I'm just a tap away whenever you need a friend. 🌿"
-            ]
-        };
-
+        // --- 2. ADVANCED EMPATHY ENGINE ---
         const winInput = document.getElementById('win-input');
         const botResponse = document.getElementById('bot-response');
 
         winInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
-                const text = winInput.value.toLowerCase();
-                if(!text.trim()) return;
+                const text = winInput.value.toLowerCase().trim();
+                if(!text) return;
+
+                // Keywords for emotional reasoning
+                const sadTriggers = ["sad", "bad", "hurt", "fail", "hate", "lonely", "tired", "hard", "difficult", "cry", "broken", "awful", "stress", "lose"];
+                const happyTriggers = ["happy", "good", "great", "won", "amazing", "love", "win", "smile", "better", "best"];
+
+                // Prioritize "Sad" detection to ensure empathy
+                let isSad = sadTriggers.some(word => text.includes(word));
+                let isHappy = happyTriggers.some(word => text.includes(word));
 
                 botResponse.innerText = "Listening...";
                 
-                // Emotional Reasoning Logic
-                let moodType = "neutral";
-                if(text.match(/sad|bad|hurt|cry|fail|hate|lonely|tired|exhausted|hard|difficult|ugly|mess/)) {
-                    moodType = "sad";
-                } else if(text.match(/good|happy|won|great|amazing|love|excited|better|win/)) {
-                    moodType = "happy";
-                }
-
-                const replies = chatPool[moodType];
-                const finalReply = replies[Math.floor(Math.random() * replies.length)];
-
-                // Simulate human delay
                 setTimeout(() => {
-                    botResponse.innerText = finalReply;
-                    winInput.value = "";
+                    if (isSad) {
+                        // Reasoning for bad feelings
+                        botResponse.style.borderLeftColor = "#485460";
+                        botResponse.style.color = "#485460";
+                        botResponse.innerText = "I hear you. That sounds incredibly heavy, and it's okay to feel exactly as you do. Thank you for being honest with me about it. I'm sitting here with you. 🫂";
+                    } else if (isHappy) {
+                        // Reasoning for good feelings
+                        botResponse.style.borderLeftColor = "var(--primary)";
+                        botResponse.style.color = "var(--primary)";
+                        botResponse.innerText = "I love that for you! ✨ It's so good to see you shining. You deserve every bit of this happiness. Keep that energy close today!";
+                    } else {
+                        // Neutral reasoning
+                        botResponse.style.borderLeftColor = "var(--primary)";
+                        botResponse.style.color = "var(--text)";
+                        botResponse.innerText = "Thanks for sharing that with me. I'm glad you took a second to check in. I'm always here to listen whenever you need to let it out. 🌿";
+                    }
                     
-                    // Visual feedback bounce
-                    const card = document.getElementById('journal-card');
-                    card.style.transform = "scale(1.02)";
-                    setTimeout(() => card.style.transform = "scale(1)", 200);
+                    // Interaction feedback
+                    winInput.value = "";
+                    const card = document.getElementById('chat-card');
+                    card.style.transform = "translateY(-5px)";
+                    setTimeout(() => card.style.transform = "translateY(0)", 200);
                 }, 800);
             }
         });
 
-        // --- 3. Dynamic UI Mood Handler ---
-        function handleMood(mood, color) {
-            document.getElementById('appHeader').style.background = color;
-            const title = document.getElementById('journal-title');
-            
-            if(mood === 'Heavy' || mood === 'Lonely') {
-                title.innerText = "What's making it heavy? I'm here.";
-                botResponse.innerText = "It's okay to feel this way. Tell me more.";
+        function quickLog(mood) {
+            const bot = document.getElementById('bot-response');
+            if(mood === 'Heavy' || mood === 'Anxious') {
+                bot.innerText = `I see you logged a ${mood} mood. It's okay to feel that way. If you want to type about what's making it heavy, I'm here.`;
             } else {
-                title.innerText = "What's on your mind?";
-                botResponse.innerText = `You logged a ${mood} mood. How can I help?`;
+                bot.innerText = `You're feeling ${mood}. That's great to hear! Tell me more about what's making your day good.`;
             }
         }
 
-        // --- 4. Initialization ---
-        window.addEventListener('load', () => {
-            // Splash screen delay
+        // --- 3. INITIALIZATION ---
+        window.onload = () => {
+            // Set dynamic greeting
+            const hr = new Date().getHours();
+            const greet = document.getElementById('greet');
+            if(hr < 12) greet.innerText = "Good morning.";
+            else if(hr < 18) greet.innerText = "Good afternoon.";
+            else greet.innerText = "Good evening.";
+
+            // Remove splash screen
             setTimeout(() => {
                 document.getElementById('splash').style.opacity = "0";
                 setTimeout(() => {
                     document.getElementById('splash').style.display = "none";
                     document.getElementById('appShell').style.opacity = "1";
-                }, 800);
+                }, 600);
             }, 2000);
-
-            // Dynamic Date
-            const dateStr = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
-            document.getElementById('date-label').innerText = dateStr;
-        });
+        };
     </script>
 </body>
 </html>
