@@ -1,53 +1,65 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>MindCheck – Mental Health Awareness</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f7fb;
-      margin: 0;
-      padding: 0;
-      color: #333;
-    }
-    header {
-      background: #4a6cf7;
-      color: white;
-      padding: 20px;
-      text-align: center;
-    }
-    section {
-      padding: 20px;
-      max-width: 600px;
-      margin: auto;
-    }
-    .card {
-      background: white;
-      padding: 15px;
-      border-radius: 10px;
-      margin-bottom: 15px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    button {
-      padding: 10px 15px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      margin: 5px;
-      font-size: 16px;
-    }
-    .good { background: #4caf50; color: white; }
-    .okay { background: #ff9800; color: white; }
-    .low  { background: #f44336; color: white; }
-    footer {
-      text-align: center;
-      font-size: 13px;
-      padding: 15px;
-      color: #666;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MindCheck – Mental Health Awareness</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f4f7fb;
+    margin: 0;
+    padding: 0;
+    color: #333;
+  }
+  header {
+    background: #4a6cf7;
+    color: white;
+    padding: 20px;
+    text-align: center;
+  }
+  section {
+    padding: 20px;
+    max-width: 600px;
+    margin: auto;
+  }
+  .card {
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+  }
+  .card:hover { transform: scale(1.02); }
+  button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    margin: 5px;
+    font-size: 16px;
+    transition: transform 0.1s;
+  }
+  button:active { transform: scale(0.95); }
+  .good { background: #4caf50; color: white; }
+  .okay { background: #ff9800; color: white; }
+  .low  { background: #f44336; color: white; }
+  #breathingCircle {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: #4a6cf7;
+    margin: 20px auto;
+    animation: none;
+  }
+  footer {
+    text-align: center;
+    font-size: 13px;
+    padding: 15px;
+    color: #666;
+  }
+</style>
 </head>
 <body>
 
@@ -65,19 +77,23 @@
     <button class="okay" onclick="saveMood('Okay')">😐 Okay</button>
     <button class="low" onclick="saveMood('Low')">😞 Low</button>
     <p id="moodResult"></p>
+    <h3>Past 7 Days:</h3>
+    <ul id="moodHistory"></ul>
   </div>
 
   <!-- Daily Tip -->
   <div class="card">
-    <h2>Daily Wellness Tip</h2>
+    <h2>Wellness Tip</h2>
     <p id="tip"></p>
+    <button onclick="nextTip()">Next Tip</button>
   </div>
 
   <!-- Breathing Exercise -->
   <div class="card">
     <h2>60-Second Breathing</h2>
-    <p>Breathe in for 4 seconds, hold for 4, breathe out for 6.</p>
+    <p>Breathe in for 4s, hold 4s, breathe out 6s.</p>
     <button onclick="startBreathing()">Start</button>
+    <div id="breathingCircle"></div>
     <p id="breathingText"></p>
   </div>
 
@@ -91,7 +107,6 @@
   <div class="card">
     <h2>Need Support?</h2>
     <p>You are not alone.</p>
-    <p><strong>Kenya helplines:</strong></p>
     <ul>
       <li>999 / 112 – Emergency</li>
       <li>Befrienders Kenya: 0722 178 177</li>
@@ -101,19 +116,31 @@
 </section>
 
 <footer>
-  <p>
-    This app is for mental health awareness and self-care education only.
-    It does not replace professional help.
-  </p>
+  This app is for mental health awareness and self-care education only. It does not replace professional help.
 </footer>
 
 <script>
-  // Mood Check
+  // Mood Tracker with History
   function saveMood(mood) {
-    localStorage.setItem("todayMood", mood);
-    document.getElementById("moodResult").innerText =
-      "You marked today as: " + mood;
+    let moods = JSON.parse(localStorage.getItem("moodHistory")) || [];
+    moods.push({date: new Date().toLocaleDateString(), mood: mood});
+    if (moods.length > 7) moods.shift(); // keep last 7 days
+    localStorage.setItem("moodHistory", JSON.stringify(moods));
+    displayMoodHistory();
   }
+
+  function displayMoodHistory() {
+    const moods = JSON.parse(localStorage.getItem("moodHistory")) || [];
+    document.getElementById("moodHistory").innerHTML = "";
+    moods.forEach(m => {
+      const li = document.createElement("li");
+      li.innerText = `${m.date}: ${m.mood}`;
+      document.getElementById("moodHistory").appendChild(li);
+    });
+    if (moods.length) document.getElementById("moodResult").innerText = "Last mood saved: " + moods[moods.length-1].mood;
+  }
+
+  displayMoodHistory();
 
   // Daily Tips
   const tips = [
@@ -121,23 +148,42 @@
     "Talk to one person you trust.",
     "Get at least 7 hours of rest.",
     "Limit social media for one hour.",
-    "Breathe slowly and relax your shoulders."
+    "Breathe slowly and relax your shoulders.",
+    "Write down one thing you're grateful for today."
   ];
-  document.getElementById("tip").innerText =
-    tips[Math.floor(Math.random() * tips.length)];
+  let tipIndex = Math.floor(Math.random()*tips.length);
+  document.getElementById("tip").innerText = tips[tipIndex];
 
-  // Breathing Exercise
+  function nextTip() {
+    tipIndex = (tipIndex + 1) % tips.length;
+    document.getElementById("tip").innerText = tips[tipIndex];
+  }
+
+  // Breathing Animation
   function startBreathing() {
+    const circle = document.getElementById("breathingCircle");
     const text = document.getElementById("breathingText");
+    circle.style.animation = "breathing 14s linear forwards";
     text.innerText = "Breathe in…";
     setTimeout(() => text.innerText = "Hold…", 4000);
     setTimeout(() => text.innerText = "Breathe out…", 8000);
     setTimeout(() => text.innerText = "Good job 🌱", 14000);
   }
 
-  // Share App via WhatsApp
+  const style = document.createElement('style');
+  style.innerHTML = `
+    @keyframes breathing {
+      0% { transform: scale(1); }
+      28% { transform: scale(1.5); } /* breathe in */
+      57% { transform: scale(1.5); } /* hold */
+      100% { transform: scale(1); } /* breathe out */
+    }
+  `;
+  document.head.appendChild(style);
+
+  // Share App
   function shareApp() {
-    const url = "https://yourusername.github.io"; // <-- Replace with your live site link
+    const url = "https://yourusername.github.io"; // Replace with your live link
     const text = "Check out MindCheck – Mental Health Awareness App!";
     window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text + " " + url)}`, "_blank");
   }
