@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MindCheck – Mental Health Awareness</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f7fb;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+    header {
+      background: #4a6cf7;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+    section {
+      padding: 20px;
+      max-width: 600px;
+      margin: auto;
+    }
+    .card {
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    button {
+      padding: 10px 15px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 5px;
+      font-size: 16px;
+    }
+    .good { background: #4caf50; color: white; }
+    .okay { background: #ff9800; color: white; }
+    .low  { background: #f44336; color: white; }
+    footer {
+      text-align: center;
+      font-size: 13px;
+      padding: 15px;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>MindCheck</h1>
+  <p>Mental Health Awareness & Self-Care</p>
+</header>
+
+<section>
+
+  <!-- Mood Check -->
+  <div class="card">
+    <h2>How are you feeling today?</h2>
+    <button class="good" onclick="saveMood('Good')">😊 Good</button>
+    <button class="okay" onclick="saveMood('Okay')">😐 Okay</button>
+    <button class="low" onclick="saveMood('Low')">😞 Low</button>
+    <p id="moodResult"></p>
+  </div>
+
+  <!-- Daily Tip -->
+  <div class="card">
+    <h2>Daily Wellness Tip</h2>
+    <p id="tip"></p>
+  </div>
+
+  <!-- Breathing Exercise -->
+  <div class="card">
+    <h2>60-Second Breathing</h2>
+    <p>Breathe in for 4 seconds, hold for 4, breathe out for 6.</p>
+    <button onclick="startBreathing()">Start</button>
+    <p id="breathingText"></p>
+  </div>
+
+  <!-- Share App -->
+  <div class="card">
+    <h2>Share this app</h2>
+    <button onclick="shareApp()">Share via WhatsApp</button>
+  </div>
+
+  <!-- Emergency Info -->
+  <div class="card">
+    <h2>Need Support?</h2>
+    <p>You are not alone.</p>
+    <p><strong>Kenya helplines:</strong></p>
+    <ul>
+      <li>999 / 112 – Emergency</li>
+      <li>Befrienders Kenya: 0722 178 177</li>
+    </ul>
+  </div>
+
+</section>
+
+<footer>
+  <p>
+    This app is for mental health awareness and self-care education only.
+    It does not replace professional help.
+  </p>
+</footer>
+
+<script>
+  // Mood Check
+  function saveMood(mood) {
+    localStorage.setItem("todayMood", mood);
+    document.getElementById("moodResult").innerText =
+      "You marked today as: " + mood;
+  }
+
+  // Daily Tips
+  const tips = [
+    "Drink water and take a short walk today.",
+    "Talk to one person you trust.",
+    "Get at least 7 hours of rest.",
+    "Limit social media for one hour.",
+    "Breathe slowly and relax your shoulders."
+  ];
+  document.getElementById("tip").innerText =
+    tips[Math.floor(Math.random() * tips.length)];
+
+  // Breathing Exercise
+  function startBreathing() {
+    const text = document.getElementById("breathingText");
+    text.innerText = "Breathe in…";
+    setTimeout(() => text.innerText = "Hold…", 4000);
+    setTimeout(() => text.innerText = "Breathe out…", 8000);
+    setTimeout(() => text.innerText = "Good job 🌱", 14000);
+  }
+
+  // Share App via WhatsApp
+  function shareApp() {
+    const url = "https://yourusername.github.io"; // <-- Replace with your live site link
+    const text = "Check out MindCheck – Mental Health Awareness App!";
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text + " " + url)}`, "_blank");
+  }
+</script>
+
+</body>
+</html>
