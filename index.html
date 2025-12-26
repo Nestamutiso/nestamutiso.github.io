@@ -1,245 +1,261 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MindCheck | Your Companion</title>
-<style>
-  :root {
-    --accent: #6c5ce7;
-    --soft-bg: #f0f3ff;
-    --white: #ffffff;
-    --text: #2d3436;
-    --subtle: #636e72;
-  }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MindCheck App</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #fdfbff;
+            --primary: #7d5fff;
+            --secondary: #fffa65;
+            --text-main: #1e272e;
+            --glass: rgba(255, 255, 255, 0.8);
+        }
 
-  body {
-    font-family: 'Outfit', sans-serif; /* A rounded, friendly font */
-    background: var(--soft-bg);
-    margin: 0;
-    color: var(--text);
-    overflow-x: hidden;
-  }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-  /* Animated Background Bubbles */
-  .bg-bubble {
-    position: fixed;
-    z-index: -1;
-    background: rgba(108, 92, 231, 0.05);
-    border-radius: 50%;
-    animation: float 20s infinite linear;
-  }
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            padding: 0;
+            color: var(--text-main);
+            height: 100vh;
+            overflow: hidden;
+        }
 
-  @keyframes float {
-    from { transform: translateY(100vh) scale(1); }
-    to { transform: translateY(-10vh) scale(1.5); }
-  }
+        /* --- Splash Screen --- */
+        #splash {
+            position: fixed;
+            inset: 0;
+            background: var(--primary);
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            transition: opacity 0.8s ease-out;
+        }
 
-  header {
-    padding: 40px 25px;
-    background: var(--white);
-    border-radius: 0 0 30px 30px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.03);
-  }
+        .logo-icon {
+            font-size: 80px;
+            animation: pulse 2s infinite;
+        }
 
-  h1 { margin: 0; font-size: 28px; color: var(--accent); }
-  .greeting { font-size: 18px; color: var(--subtle); margin-top: 5px; }
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
 
-  .container { padding: 20px; max-width: 500px; margin: auto; }
+        /* --- Layout --- */
+        .app-shell {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
 
-  /* Friendly Cards */
-  .card {
-    background: var(--white);
-    padding: 25px;
-    border-radius: 24px;
-    margin-bottom: 20px;
-    box-shadow: 0 8px 20px rgba(108, 92, 231, 0.06);
-    border: 1px solid rgba(255,255,255,0.8);
-  }
+        header {
+            padding: 40px 20px 20px;
+            background: var(--bg);
+        }
 
-  /* Mood Interaction */
-  .mood-row { display: flex; justify-content: space-around; margin: 20px 0; }
-  .mood-item {
-    text-align: center;
-    cursor: pointer;
-    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  }
-  .mood-item:hover { transform: scale(1.2); }
-  .mood-emoji { font-size: 40px; display: block; margin-bottom: 5px; }
-  .mood-label { font-size: 12px; font-weight: 600; color: var(--subtle); }
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0 20px 100px;
+        }
 
-  /* Interactive Affirmation Pop-up */
-  #affirmation-toast {
-    position: fixed;
-    top: -100px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--accent);
-    color: white;
-    padding: 15px 25px;
-    border-radius: 50px;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-    transition: top 0.5s ease;
-    z-index: 1000;
-    width: 80%;
-    text-align: center;
-  }
+        /* --- App Cards --- */
+        .app-card {
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border-radius: 28px;
+            padding: 24px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(0,0,0,0.05);
+            box-shadow: 0 10px 25px rgba(125, 95, 255, 0.08);
+        }
 
-  /* Breathing Space */
-  .breath-box {
-    text-align: center;
-    background: linear-gradient(135deg, #6c5ce7, #a29bfe);
-    color: white;
-  }
+        /* --- Mood Grid --- */
+        .mood-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-top: 15px;
+        }
 
-  #breathingCircle {
-    width: 120px;
-    height: 120px;
-    border: 8px solid rgba(255,255,255,0.3);
-    border-radius: 50%;
-    margin: 30px auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    transition: all 4s ease-in-out;
-  }
+        .mood-item {
+            background: #f1f2f6;
+            border-radius: 20px;
+            padding: 15px 5px;
+            border: none;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
 
-  .btn-primary {
-    background: var(--accent);
-    color: white;
-    border: none;
-    padding: 12px 25px;
-    border-radius: 15px;
-    font-weight: bold;
-    width: 100%;
-    cursor: pointer;
-  }
+        .mood-item:active {
+            transform: scale(0.9);
+            background: var(--primary);
+            color: white;
+        }
 
-  .history-dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: #dfe6e9;
-    display: inline-block;
-    margin-right: 5px;
-  }
-</style>
+        .mood-emoji { font-size: 24px; display: block; }
+
+        /* --- Breathing Native Feel --- */
+        .zen-zone {
+            background: var(--primary);
+            color: white;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .circle-wrap {
+            height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        #breathCircle {
+            width: 80px;
+            height: 80px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            border: 2px solid white;
+            transition: 4s cubic-bezier(0.45, 0, 0.55, 1);
+        }
+
+        /* --- Bottom Nav --- */
+        nav {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: rgba(30, 39, 46, 0.95);
+            backdrop-filter: blur(10px);
+            height: 65px;
+            border-radius: 30px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .nav-item {
+            color: #808e9b;
+            text-decoration: none;
+            font-size: 20px;
+            transition: 0.3s;
+        }
+
+        .nav-item.active { color: white; transform: translateY(-5px); }
+
+        /* --- Utility --- */
+        .hidden { display: none; }
+        .fade-out { opacity: 0; pointer-events: none; }
+    </style>
 </head>
 <body>
 
-<div id="affirmation-toast">You're doing great! 🌟</div>
-
-<header>
-  <h1 id="time-greeting">Hello!</h1>
-  <div class="greeting">How is your heart feeling right now?</div>
-</header>
-
-<div class="container">
-  <div class="card">
-    <div class="mood-row">
-      <div class="mood-item" onclick="logMood('Great', '✨')">
-        <span class="mood-emoji">🌈</span>
-        <span class="mood-label">Great</span>
-      </div>
-      <div class="mood-item" onclick="logMood('Okay', '🌿')">
-        <span class="mood-emoji">🍃</span>
-        <span class="mood-label">Okay</span>
-      </div>
-      <div class="mood-item" onclick="logMood('Tired', '☁️')">
-        <span class="mood-emoji">🌊</span>
-        <span class="mood-label">Tired</span>
-      </div>
-      <div class="mood-item" onclick="logMood('Low', '💧')">
-        <span class="mood-emoji">☔</span>
-        <span class="mood-label">Low</span>
-      </div>
+    <div id="splash">
+        <div class="logo-icon">🌿</div>
+        <h2 style="margin-top:20px; font-weight:300; letter-spacing:2px;">MINDCHECK</h2>
     </div>
-  </div>
 
-  <div class="card breath-box">
-    <h3>Take a moment for you</h3>
-    <div id="breathingCircle">Breathe</div>
-    <button class="btn-primary" style="background:white; color:var(--accent)" onclick="startZen()">Start Zen Mode</button>
-  </div>
+    <div class="app-shell">
+        <header>
+            <span id="date-label" style="text-transform: uppercase; font-size: 12px; letter-spacing: 1px; color: #a4b0be;">FRIDAY, 26 DEC</span>
+            <h1 style="margin: 5px 0; font-size: 32px;">Hello, Human.</h1>
+        </header>
 
-  <div class="card">
-    <h3>Kindness Corner</h3>
-    <p style="font-size: 14px; color: var(--subtle);">"You don't have to be positive all the time. It's perfectly okay to feel frustrated, sad, or stuck."</p>
-    <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
-    <button class="btn-primary" onclick="window.location.href='tel:0722178177'">Talk to a human ❤️</button>
-  </div>
-</div>
+        <main class="main-content">
+            <div class="app-card">
+                <h3 style="margin-top:0">How's the energy?</h3>
+                <div class="mood-grid">
+                    <button class="mood-item" onclick="log('Chill')"><span class="mood-emoji">☁️</span>Chill</button>
+                    <button class="mood-item" onclick="log('Happy')"><span class="mood-emoji">☀️</span>Happy</button>
+                    <button class="mood-item" onclick="log('Meh')"><span class="mood-emoji">🌪️</span>Meh</button>
+                    <button class="mood-item" onclick="log('Busy')"><span class="mood-emoji">🐝</span>Busy</button>
+                </div>
+            </div>
 
-<script>
-  // 1. Dynamic Greeting
-  const hour = new Date().getHours();
-  const greetingEl = document.getElementById('time-greeting');
-  if (hour < 12) greetingEl.innerText = "Good Morning ☀️";
-  else if (hour < 18) greetingEl.innerText = "Good Afternoon 🌤️";
-  else greetingEl.innerText = "Good Evening 🌙";
+            <div class="app-card zen-zone">
+                <h3 style="margin-top:0">One Minute Zen</h3>
+                <div class="circle-wrap">
+                    <div id="breathCircle"></div>
+                </div>
+                <button onclick="startAppBreath()" style="background:white; border:none; padding:12px 30px; border-radius:20px; font-weight:700; color:var(--primary);">START</button>
+            </div>
 
-  // 2. Background Bubbles
-  for(let i=0; i<6; i++) {
-    let bubble = document.createElement('div');
-    bubble.className = 'bg-bubble';
-    bubble.style.width = bubble.style.height = Math.random() * 100 + 50 + 'px';
-    bubble.style.left = Math.random() * 100 + 'vw';
-    bubble.style.animationDuration = Math.random() * 10 + 10 + 's';
-    bubble.style.animationDelay = Math.random() * 5 + 's';
-    document.body.appendChild(bubble);
-  }
+            <div class="app-card">
+                <h3 style="margin-top:0">A small win today?</h3>
+                <input type="text" placeholder="I finished my coffee hot..." style="width:100%; padding:15px; border-radius:15px; border:1px solid #ddd; font-family:inherit;">
+            </div>
+        </main>
 
-  // 3. Humanized Feedback (Affirmations)
-  const affirmations = [
-    "Thank you for checking in with yourself. 💜",
-    "Your feelings are valid. Take it one step at a time.",
-    "Proud of you for being mindful today! ✨",
-    "Sending you a digital hug. You've got this. 🫂",
-    "Rest is productive. Be kind to yourself."
-  ];
+        <nav>
+            <a href="#" class="nav-item active">🏠</a>
+            <a href="#" class="nav-item">📊</a>
+            <a href="#" class="nav-item">🫂</a>
+            <a href="#" class="nav-item">⚙️</a>
+        </nav>
+    </div>
 
-  function logMood(mood, effect) {
-    const toast = document.getElementById('affirmation-toast');
-    toast.innerText = affirmations[Math.floor(Math.random() * affirmations.length)];
-    toast.style.top = "20px";
-    
-    setTimeout(() => { toast.style.top = "-100px"; }, 4000);
-  }
+    <script>
+        // 1. Splash Screen Timeout
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const splash = document.getElementById('splash');
+                splash.classList.add('fade-out');
+            }, 2000);
+        });
 
-  // 4. Smooth Zen Breathing
-  let zenActive = false;
-  function startZen() {
-    if(zenActive) return;
-    zenActive = true;
-    const circle = document.getElementById('breathingCircle');
-    
-    const sequence = () => {
-      circle.innerText = "Inhale";
-      circle.style.transform = "scale(1.5)";
-      circle.style.background = "rgba(255,255,255,0.2)";
-      
-      setTimeout(() => {
-        circle.innerText = "Hold";
-      }, 4000);
+        // 2. Set Dynamic Date
+        const options = { weekday: 'long', month: 'short', day: 'numeric' };
+        document.getElementById('date-label').innerText = new Date().toLocaleDateString('en-US', options);
 
-      setTimeout(() => {
-        circle.innerText = "Exhale";
-        circle.style.transform = "scale(1)";
-        circle.style.background = "none";
-      }, 8000);
-    };
+        // 3. Simple Interaction Logging
+        function log(mood) {
+            // Native-style feedback (could be expanded to vibration API)
+            console.log("Logged: " + mood);
+            // Visual feedback
+            const btn = event.currentTarget;
+            btn.style.background = "#7d5fff";
+            btn.style.color = "white";
+            setTimeout(() => {
+                alert("Noted. Keep being you. ✨");
+            }, 300);
+        }
 
-    sequence();
-    const interval = setInterval(sequence, 12000);
-    
-    // Stop after 3 cycles
-    setTimeout(() => {
-      clearInterval(interval);
-      zenActive = false;
-      circle.innerText = "Peaceful";
-    }, 36000);
-  }
-</script>
+        // 4. App-Style Breathing
+        function startAppBreath() {
+            const circle = document.getElementById('breathCircle');
+            let count = 0;
+            
+            const run = () => {
+                if(count >= 3) {
+                    circle.style.transform = "scale(1)";
+                    return;
+                }
+                circle.style.transform = "scale(2.5)";
+                circle.style.background = "rgba(255,255,255,0.5)";
+                
+                setTimeout(() => {
+                    circle.style.transform = "scale(1)";
+                    circle.style.background = "rgba(255,255,255,0.2)";
+                }, 4000);
+                
+                count++;
+                setTimeout(run, 8000);
+            };
+            run();
+        }
+    </script>
 </body>
 </html>
