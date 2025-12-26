@@ -3,125 +3,131 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MindCheck | AI Thought Partner</title>
+    <title>MindCheck | AI Companion</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #7d5fff; --bg: #fdfbff; --text: #1e272e;
-            --card: #ffffff; --user-msg: #efedff; --bot-msg: #7d5fff;
+            --card: #ffffff; --user-bubble: #efedff; --bot-bubble: #7d5fff;
         }
         body.dark-mode {
             --bg: #121212; --text: #e0e0e0; --card: #1e1e1e;
-            --user-msg: #2d2d2d; --bot-msg: #a29bfe;
+            --user-bubble: #2d2d2d; --bot-bubble: #a29bfe;
         }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Outfit', sans-serif; }
         body { background: var(--bg); margin: 0; color: var(--text); height: 100vh; overflow: hidden; transition: 0.3s; }
 
-        /* --- Auth Screen --- */
+        /* --- Screens --- */
         #auth-screen { position: fixed; inset: 0; background: var(--primary); z-index: 10000; display: flex; align-items: center; justify-content: center; }
-        .auth-card { background: white; padding: 40px; border-radius: 35px; width: 90%; max-width: 400px; text-align: center; color: #333; box-shadow: 0 20px 50px rgba(0,0,0,0.2); }
-        .auth-card input { width: 100%; padding: 15px; margin: 15px 0; border-radius: 15px; border: 1px solid #ddd; outline: none; }
-
-        /* --- App Shell --- */
+        .auth-card { background: white; padding: 40px; border-radius: 35px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.2); }
+        
         .app-shell { height: 100vh; display: none; flex-direction: column; }
         .view { display: none; flex: 1; overflow-y: auto; padding: 20px 20px 120px; }
-        .view.active { display: flex; flex-direction: column; animation: slideUp 0.4s ease; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } }
+        .view.active { display: flex; flex-direction: column; animation: fadeIn 0.4s ease; }
 
         /* --- Chat UI --- */
-        #chat-log { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding-bottom: 10px; }
+        #chat-log { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding: 10px 0; }
         .bubble { max-width: 85%; padding: 14px 18px; border-radius: 22px; font-size: 15px; line-height: 1.5; }
-        .bot { background: var(--bot-msg); color: white; align-self: flex-start; border-bottom-left-radius: 4px; }
-        .user { background: var(--user-msg); color: var(--text); align-self: flex-end; border-bottom-right-radius: 4px; }
+        .bot { background: var(--bot-bubble); color: white; align-self: flex-start; border-bottom-left-radius: 4px; }
+        .user { background: var(--user-bubble); color: var(--text); align-self: flex-end; border-bottom-right-radius: 4px; }
 
         .input-bar { background: var(--card); padding: 10px; border-radius: 30px; display: flex; align-items: center; gap: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
         #user-input { flex: 1; border: none; background: transparent; color: var(--text); padding: 10px; outline: none; font-size: 16px; }
 
         /* --- Nav --- */
-        nav { position: fixed; bottom: 25px; left: 20px; right: 20px; background: #1e272e; height: 75px; border-radius: 38px; display: flex; justify-content: space-around; align-items: center; }
+        nav { position: fixed; bottom: 25px; left: 20px; right: 20px; background: #1e272e; height: 75px; border-radius: 38px; display: flex; justify-content: space-around; align-items: center; z-index: 1000; }
         .nav-btn { background: none; border: none; color: #808e9b; font-size: 24px; cursor: pointer; transition: 0.3s; }
         .nav-btn.active { color: white; transform: translateY(-5px); }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } }
     </style>
 </head>
 <body>
 
     <div id="auth-screen">
         <div class="auth-card">
-            <h1 style="margin:0">🌿</h1>
-            <h2>MindCheck Super App</h2>
-            <p>Enter your name to begin.</p>
-            <input type="text" id="username" placeholder="Your Name">
-            <button onclick="login()" style="width:100%; padding:15px; background:var(--primary); color:white; border:none; border-radius:15px; font-weight:700; cursor:pointer;">Launch Session</button>
+            <h1 style="color:#333; margin:0">🌿</h1>
+            <h2 style="color:#333">MindCheck Pro</h2>
+            <input type="text" id="username" placeholder="Enter Your Name" style="width:100%; padding:15px; margin:20px 0; border-radius:15px; border:1px solid #ddd;">
+            <button onclick="handleLogin()" style="width:100%; padding:15px; background:var(--primary); color:white; border:none; border-radius:15px; font-weight:700; cursor:pointer;">Start Chat</button>
         </div>
     </div>
 
     <div class="app-shell" id="app-shell">
         <main id="home" class="view active">
-            <header><h1 id="greet" style="margin:0">Hi</h1></header>
+            <header><h1 id="greet" style="margin:0">Hello</h1></header>
             <div id="chat-log"></div>
             <div class="input-bar">
-                <input type="text" id="user-input" placeholder="Type a thought..." autocomplete="off">
-                <button onclick="send()" style="background:var(--primary); color:white; border:none; width:45px; height:45px; border-radius:50%; cursor:pointer;">↑</button>
+                <input type="text" id="user-input" placeholder="Type a message..." autocomplete="off">
+                <button onclick="processChat()" style="background:var(--primary); color:white; border:none; width:45px; height:45px; border-radius:50%; cursor:pointer;">↑</button>
             </div>
         </main>
 
         <main id="settings" class="view">
-            <header><h1>Settings</h1></header>
-            <div style="background:var(--card); padding:20px; border-radius:25px;">
-                <p>User Account: <b id="u-display">...</b></p>
-                <button onclick="document.body.classList.toggle('dark-mode')" style="width:100%; padding:12px; border:none; border-radius:12px; background:#f1f2f6; margin-bottom:10px; cursor:pointer;">Toggle Dark Mode</button>
-                <button onclick="localStorage.clear(); location.reload();" style="width:100%; padding:15px; background:#ffebee; color:red; border:none; border-radius:15px; margin-top:20px; cursor:pointer;">Logout & Delete Memory</button>
+            <header><h1>Insights & Settings</h1></header>
+            <div style="background:var(--card); padding:20px; border-radius:25px; margin-bottom:20px;">
+                <h3>Vibe Summary</h3>
+                <p id="vibe-box" style="color:#888; font-size:14px;">Log some thoughts to see your summary.</p>
+                <button onclick="getVibeSummary()" style="width:100%; padding:10px; border:none; background:var(--primary); color:white; border-radius:10px; font-weight:bold;">Analyze My Vibe</button>
             </div>
-            <p style="text-align:center; color:#999; font-size:12px; margin-top:20px;">MindCheck Pro v4.0 | Fully Reasoning AI</p>
+            <div style="background:var(--card); padding:20px; border-radius:25px;">
+                <p>Logged in as: <b id="u-display">...</b></p>
+                <button onclick="document.body.classList.toggle('dark-mode')" style="width:100%; padding:10px; margin-bottom:10px; border:none; border-radius:10px;">Toggle Dark Mode</button>
+                <button onclick="localStorage.clear(); location.reload();" style="width:100%; padding:10px; border:none; border-radius:10px; background:#ffebee; color:red;">Logout</button>
+            </div>
         </main>
 
         <nav>
-            <button class="nav-btn active" onclick="tab('home', this)">🏠</button>
-            <button class="nav-btn" onclick="tab('settings', this)">⚙️</button>
+            <button class="nav-btn active" onclick="switchView('home', this)">🏠</button>
+            <button class="nav-btn" onclick="switchView('settings', this)">📊</button>
         </nav>
     </div>
 
     <script>
         let userName = "";
         let convoMemory = [];
+        let moodTracker = 0;
 
-        function login() {
-            userName = document.getElementById('username').value;
-            if(!userName) return;
-            localStorage.setItem('mind_super_final', userName);
+        function handleLogin() {
+            const name = document.getElementById('username').value;
+            if(!name.trim()) return;
+            userName = name;
+            localStorage.setItem('mindcheck_v_final', name);
             document.getElementById('auth-screen').style.display = 'none';
             document.getElementById('app-shell').style.display = 'flex';
-            document.getElementById('u-display').innerText = userName;
-            init();
+            document.getElementById('u-display').innerText = name;
+            initChat();
         }
 
-        function init() {
+        function initChat() {
             const hr = new Date().getHours();
-            const timeGreet = hr < 12 ? "Good morning" : hr < 18 ? "Good afternoon" : "Good evening";
-            document.getElementById('greet').innerText = `${timeGreet}, ${userName}`;
-            addBubble(`Hey ${userName}. I'm here to listen. Tell me what’s actually on your mind today—no filters needed.`, 'bot');
+            document.getElementById('greet').innerText = (hr < 12 ? "Morning, " : hr < 18 ? "Afternoon, " : "Evening, ") + userName;
+            addMsg(`Hey ${userName}, it's me. I'm here to reason through your day with you. What's on your mind?`, 'bot');
         }
 
-        function tab(id, btn) {
+        function switchView(id, btn) {
             document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(id).classList.add('active');
             btn.classList.add('active');
         }
 
-        function send() {
+        function processChat() {
             const input = document.getElementById('user-input');
             const val = input.value.trim();
             if(!val) return;
-            addBubble(val, 'user');
+            
+            addMsg(val, 'user');
             convoMemory.push(val.toLowerCase());
             input.value = "";
+
             setTimeout(() => {
-                addBubble(reasonAI(val.toLowerCase()), 'bot');
-            }, 800);
+                const response = getAIResponse(val.toLowerCase());
+                addMsg(response, 'bot');
+            }, 700);
         }
 
-        function addBubble(txt, side) {
+        function addMsg(txt, side) {
             const log = document.getElementById('chat-log');
             const div = document.createElement('div');
             div.className = `bubble ${side}`;
@@ -130,38 +136,57 @@
             log.scrollTop = log.scrollHeight;
         }
 
-        function reasonAI(input) {
-            // Memory Check
+        function getAIResponse(input) {
             if (input.includes("remember")) {
-                return convoMemory.length > 1 
-                    ? `I'm keeping track. You recently mentioned: "${convoMemory[convoMemory.length-2]}". How are you feeling about that now?` 
-                    : "I'm focusing deeply on what you're saying right now. Tell me more.";
+                return convoMemory.length > 1 ? `I remember you mentioned "${convoMemory[convoMemory.length-2]}". How is that affecting you now?` : "I'm focusing on everything you say. Tell me more.";
             }
 
-            // Heavy Emotion Pool
-            if (input.match(/sad|hurt|lonely|tired|fail|difficult|bad|cry|heavy|exhausted|stress/)) {
-                const sadPool = [
-                    "I hear the weight in that. It's okay to sit with that feeling—you don't have to fix it for me. What's the toughest part today?",
-                    "That sounds incredibly draining. I'm right here with you. Do you feel like you have enough space to just breathe right now?",
-                    "I can feel how much you're carrying. Thank you for being honest with me. What would 'rest' look like for you today?",
-                    "It makes sense that you're feeling this way. I'm not here to give you advice, just to listen. Want to vent more?"
+            // Reasoning Logic
+            if (input.match(/sad|hurt|bad|fail|tired|lonely|cry|heavy/)) {
+                moodTracker--;
+                const pool = [
+                    "I hear you. It's okay to feel that weight. What's the toughest part of today for you?",
+                    "That sounds incredibly draining. I'm sitting here with you. Want to vent more?",
+                    "I can feel how much you're carrying. You don't have to be 'strong' with me."
                 ];
-                return sadPool[Math.floor(Math.random() * sadPool.length)];
+                return pool[Math.floor(Math.random() * pool.length)];
             }
 
-            // Joy Pool
-            if (input.match(/happy|good|great|won|amazing|love|win|smile|better/)) {
-                const joyPool = [
-                    `I love that for you, ${userName}! ✨ It’s so good to see a win. What was the exact moment you realized today was looking up?`,
-                    "That is such a spark! You deserve to hold onto this feeling. How are you going to protect this energy today?",
-                    "Yes! I'm genuinely happy to hear that. What's one thing you're proud of yourself for in this moment?",
-                    "That sounds wonderful. It’s important to acknowledge the good stuff. What made that happen?"
+            if (input.match(/happy|good|great|won|win|love|amazing/)) {
+                moodTracker++;
+                const pool = [
+                    "I love that for you! ✨ What was the best part of that moment?",
+                    "That's a massive win. You deserve to feel this light today!",
+                    "Yes! Hold onto that energy. What made it so special?"
                 ];
-                return joyPool[Math.floor(Math.random() * joyPool.length)];
+                return pool[Math.floor(Math.random() * pool.length)];
             }
 
-            // Humanized Neutral Inquiries (The Fix for "Am following you")
-            const fallbackPool = [
-                "That's an interesting perspective. How are you honestly navigating that in your head?",
-                "I'm curious—is this something that's been on your mind for a while?",
-                "I see. If you had to describe the vibe of your day in one word
+            const fallback = [
+                "I'm listening. How are you honestly navigating that in your head?",
+                "That's interesting. Has that been on your mind for a while?",
+                "I see. If you had to describe today in one word, what would it be?",
+                "I follow you. What's the next step you're thinking about?"
+            ];
+            return fallback[Math.floor(Math.random() * fallback.length)];
+        }
+
+        function getVibeSummary() {
+            const box = document.getElementById('vibe-box');
+            if(moodTracker < 0) box.innerText = "Current Vibe: Reflective & Tender. You've been carrying some heavy thoughts lately. Be kind to yourself.";
+            else if(moodTracker > 0) box.innerText = "Current Vibe: Radiant & Growing! You're focusing on wins and positive momentum.";
+            else box.innerText = "Current Vibe: Balanced. You're checking in and staying present with your reality.";
+        }
+
+        window.onload = () => {
+            const saved = localStorage.getItem('mindcheck_v_final');
+            if(saved) {
+                document.getElementById('username').value = saved;
+                handleLogin();
+            }
+        };
+
+        document.getElementById('user-input').addEventListener('keypress', e => { if(e.key === 'Enter') processChat(); });
+    </script>
+</body>
+</html>
