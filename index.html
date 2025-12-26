@@ -3,26 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MindCheck | AI Thought Partner</title>
+    <title>MindCheck | Ultimate Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #7d5fff;
             --bg: #fdfbff;
             --text: #1e272e;
-            --card-bg: rgba(255, 255, 255, 0.95);
-            --user-msg: #efedff;
-            --bot-msg: #7d5fff;
-            --nav-bg: #1e272e;
+            --card: #ffffff;
+            --user-bubble: #efedff;
+            --bot-bubble: #7d5fff;
+            --subtle: #a4b0be;
         }
 
         body.dark-mode {
             --bg: #121212;
             --text: #e0e0e0;
-            --card-bg: #1e1e1e;
-            --user-msg: #2d2d2d;
-            --bot-msg: #a29bfe;
-            --nav-bg: #000000;
+            --card: #1e1e1e;
+            --user-bubble: #2d2d2d;
+            --bot-bubble: #a29bfe;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -32,228 +31,196 @@
             background-color: var(--bg);
             margin: 0; color: var(--text);
             height: 100vh; overflow: hidden;
-            transition: all 0.3s ease;
+            transition: background 0.4s ease;
         }
 
-        /* --- Splash Screen --- */
-        #splash {
-            position: fixed; inset: 0; background: #7d5fff;
-            z-index: 9999; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; color: white;
-            transition: opacity 0.6s ease;
+        /* --- Auth/Login Screen --- */
+        #auth-screen {
+            position: fixed; inset: 0; background: var(--primary); z-index: 10000;
+            display: flex; align-items: center; justify-content: center; padding: 20px;
+        }
+        .auth-card {
+            background: white; padding: 40px 30px; border-radius: 35px;
+            width: 100%; max-width: 380px; text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+        }
+        .auth-card input {
+            width: 100%; padding: 15px; margin: 15px 0; border-radius: 15px;
+            border: 2px solid #eee; outline: none; font-size: 16px;
+        }
+        .auth-btn {
+            width: 100%; padding: 15px; background: var(--primary);
+            color: white; border: none; border-radius: 15px;
+            font-weight: 700; cursor: pointer;
         }
 
-        /* --- App Shell --- */
-        .app-shell { height: 100vh; display: flex; flex-direction: column; opacity: 0; transition: opacity 0.5s; }
-        
-        .view { display: none; flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 110px; }
-        .view.active { display: flex; flex-direction: column; animation: fadeIn 0.3s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* --- App Structure --- */
+        .app-shell { height: 100vh; display: none; flex-direction: column; }
+        header { padding: 40px 25px 10px; flex-shrink: 0; }
+        .view { display: none; flex: 1; overflow-y: auto; padding: 10px 20px 120px; }
+        .view.active { display: flex; flex-direction: column; animation: slideUp 0.4s ease; }
 
-        header { padding: 30px 10px 10px; }
-        .app-card {
-            background: var(--card-bg);
-            border-radius: 28px; padding: 25px; margin-bottom: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-            border: 1px solid rgba(125, 95, 255, 0.1);
-        }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } }
 
-        /* --- Conversational Chat --- */
-        #chat-container {
-            flex: 1; display: flex; flex-direction: column;
-            max-height: 400px; overflow-y: auto; margin-bottom: 15px;
-            padding-right: 5px;
+        /* --- Chat Interface --- */
+        #chat-log {
+            flex: 1; overflow-y: auto; display: flex; flex-direction: column;
+            gap: 15px; padding: 10px 0;
         }
-        .chat-bubble {
-            max-width: 85%; padding: 12px 18px; border-radius: 20px;
-            margin-bottom: 12px; line-height: 1.5; font-size: 15px;
-            animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        @keyframes pop { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        
-        .bot-msg { background: var(--bot-msg); color: white; align-self: flex-start; border-bottom-left-radius: 4px; }
-        .user-msg { background: var(--user-msg); color: var(--text); align-self: flex-end; border-bottom-right-radius: 4px; }
+        .bubble { max-width: 85%; padding: 14px 18px; border-radius: 22px; font-size: 15px; line-height: 1.5; }
+        .bot { background: var(--bot-bubble); color: white; align-self: flex-start; border-bottom-left-radius: 4px; }
+        .user { background: var(--user-bubble); color: var(--text); align-self: flex-end; border-bottom-right-radius: 4px; }
 
-        .chat-input-area { position: relative; display: flex; gap: 10px; }
-        input#user-input {
-            flex: 1; padding: 15px 20px; border-radius: 25px; border: 2px solid #f1f1f1;
-            background: var(--card-bg); color: var(--text); font-family: inherit; font-size: 16px; outline: none;
+        .input-container {
+            background: var(--card); padding: 12px; border-radius: 25px;
+            display: flex; align-items: center; gap: 10px; 
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05); margin-top: 10px;
         }
+        #user-input { flex: 1; border: none; background: transparent; color: var(--text); font-size: 16px; outline: none; }
 
-        /* --- Settings --- */
-        .settings-row {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 18px 0; border-bottom: 1px solid rgba(0,0,0,0.05);
-        }
-        /* Switch UI */
-        .switch { position: relative; display: inline-block; width: 46px; height: 24px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; inset: 0; background: #ccc; border-radius: 34px; transition: .4s; }
-        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: .4s; }
-        input:checked + .slider { background: var(--primary); }
-        input:checked + .slider:before { transform: translateX(22px); }
-
-        /* --- Bottom Nav --- */
+        /* --- Navigation --- */
         nav {
             position: fixed; bottom: 25px; left: 20px; right: 20px;
-            background: var(--nav-bg); height: 75px; border-radius: 35px;
-            display: flex; justify-content: space-around; align-items: center; z-index: 1000;
+            background: #1e272e; height: 75px; border-radius: 35px;
+            display: flex; justify-content: space-around; align-items: center;
         }
         .nav-link { background: none; border: none; color: #808e9b; font-size: 24px; cursor: pointer; transition: 0.3s; }
         .nav-link.active { color: white; transform: translateY(-5px); }
+
+        .settings-card { background: var(--card); border-radius: 25px; padding: 25px; margin-bottom: 20px; }
+        .s-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid rgba(0,0,0,0.05); }
     </style>
 </head>
 <body>
 
-    <div id="splash">
-        <div style="font-size:80px">🌿</div>
-        <h1 style="letter-spacing:5px; font-weight:300;">MINDCHECK</h1>
+    <div id="auth-screen">
+        <div class="auth-card">
+            <h1>🌿</h1>
+            <h2>MindCheck</h2>
+            <p>Enter your name to start our conversation.</p>
+            <input type="text" id="username" placeholder="Your Name">
+            <button class="auth-btn" onclick="login()">Enter</button>
+        </div>
     </div>
 
-    <div class="app-shell" id="appShell">
-        
+    <div class="app-shell" id="app-shell">
         <main id="home" class="view active">
             <header>
-                <h1 id="greet-h">Hello.</h1>
-                <p style="color:var(--primary); margin:0;">How is your heart feeling right now?</p>
+                <span id="date-label" style="font-size: 11px; color: var(--subtle); font-weight: 700;"></span>
+                <h1 id="greeting" style="margin: 5px 0;">Hello.</h1>
             </header>
-
-            <div class="app-card" style="flex:1; display:flex; flex-direction:column;">
-                <div id="chat-container">
-                    <div class="chat-bubble bot-msg">I am your AI thought partner. You can tell me anything—a win, a struggle, or just a random thought. I'm listening.</div>
-                </div>
-                <div class="chat-input-area">
-                    <input type="text" id="user-input" placeholder="Type a message..." autocomplete="off">
-                </div>
-            </div>
-        </main>
-
-        <main id="community" class="view">
-            <header><h1>Community</h1></header>
-            <div class="app-card" style="text-align:center;">
-                <div style="font-size:50px; margin-bottom:15px;">🫂</div>
-                <h3>Global Pulse</h3>
-                <p id="comm-stat" style="color:var(--subtle)">Calculating local connection...</p>
-                <button onclick="alert('This will connect you to a peer support group.')" style="width:100%; padding:15px; border-radius:15px; border:none; background:var(--primary); color:white; font-weight:700;">Join a Safe Space</button>
-            </div>
-            <div class="app-card">
-                <p style="font-style: italic; color: var(--subtle)">"The bravest thing you ever did was stay alive when you didn't know how."</p>
+            <div id="chat-log"></div>
+            <div class="input-container">
+                <input type="text" id="user-input" placeholder="What's on your mind?" autocomplete="off">
+                <button onclick="sendMsg()" style="background:var(--primary); color:white; border:none; width:45px; height:45px; border-radius:50%; cursor:pointer;">↑</button>
             </div>
         </main>
 
         <main id="settings" class="view">
-            <header><h1>Settings</h1></header>
-            <div class="app-card">
-                <div class="settings-row">
-                    <span>Dark Mode</span>
-                    <label class="switch"><input type="checkbox" id="dark-toggle"><span class="slider"></span></label>
-                </div>
-                <div class="settings-row">
-                    <span>Private Session</span>
-                    <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
-                </div>
-                <div class="settings-row" onclick="location.reload()" style="cursor:pointer; color:var(--primary)">
-                    <span>Restart App</span>
-                    <span>🔄</span>
-                </div>
-                <div class="settings-row" onclick="alert('MindCheck Pro v3.0\nCreated to reason with the human heart.')">
-                    <span>App Info</span>
-                    <span>ℹ️</span>
-                </div>
+            <header><h1>Profile & Insights</h1></header>
+            <div class="settings-card">
+                <h3>Vibe Check</h3>
+                <p id="vibe-summary" style="color:var(--subtle); font-size: 14px;">Log a message to see your vibe summary.</p>
+                <button onclick="runVibeCheck()" style="width:100%; padding:12px; border:none; border-radius:12px; background:var(--primary); color:white; font-weight:700;">Refresh Vibe</button>
+            </div>
+            <div class="settings-card">
+                <div class="s-row"><span>User</span><b id="user-disp"></b></div>
+                <div class="s-row"><span>Dark Mode</span><button onclick="toggleDark()" style="border:none; padding:5px 12px; border-radius:8px;">Toggle</button></div>
+                <div class="s-row" onclick="logout()" style="color:red; cursor:pointer; border:none;"><span>Logout</span></div>
             </div>
         </main>
 
         <nav>
-            <button class="nav-link active" onclick="navTo('home', this)">🏠</button>
-            <button class="nav-link" onclick="navTo('community', this)">🫂</button>
-            <button class="nav-link" onclick="navTo('settings', this)">⚙️</button>
+            <button class="nav-link active" onclick="gotoTab('home', this)">🏠</button>
+            <button class="nav-link" onclick="gotoTab('settings', this)">📊</button>
         </nav>
     </div>
 
     <script>
-        // --- 1. Navigation Logic ---
-        function navTo(viewId, btn) {
+        let userName = "";
+        let chatMemory = { lastTopic: "", moodScore: 0 }; // Positive score = happy, Negative = sad
+
+        function login() {
+            const input = document.getElementById('username').value;
+            if(!input.trim()) return;
+            userName = input;
+            localStorage.setItem('mindcheck_v5_user', userName);
+            document.getElementById('auth-screen').style.display = 'none';
+            document.getElementById('app-shell').style.display = 'flex';
+            document.getElementById('user-disp').innerText = userName;
+            startApp();
+        }
+
+        function logout() { localStorage.clear(); location.reload(); }
+
+        function startApp() {
+            const hr = new Date().getHours();
+            const greet = hr < 12 ? "Good morning" : hr < 18 ? "Good afternoon" : "Good evening";
+            document.getElementById('greeting').innerText = `${greet}, ${userName}`;
+            document.getElementById('date-label').innerText = new Date().toLocaleDateString('en-US', {weekday:'long', month:'short', day:'numeric'});
+            addBubble(`Hi ${userName}. I've been waiting to hear from you. How are you feeling today?`, 'bot');
+        }
+
+        function gotoTab(id, btn) {
             document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
             document.querySelectorAll('.nav-link').forEach(b => b.classList.remove('active'));
-            document.getElementById(viewId).classList.add('active');
+            document.getElementById(id).classList.add('active');
             btn.classList.add('active');
-
-            if(viewId === 'community') {
-                const count = Math.floor(Math.random() * 400) + 100;
-                document.getElementById('comm-stat').innerText = `There are ${count} people in your area checking in right now. You aren't alone.`;
-            }
         }
 
-        // --- 2. Dark Mode Logic ---
-        const darkToggle = document.getElementById('dark-toggle');
-        darkToggle.addEventListener('change', () => {
-            document.body.classList.toggle('dark-mode');
-        });
-
-        // --- 3. Conversational AI Reasoning ---
-        const userInput = document.getElementById('user-input');
-        const chatContainer = document.getElementById('chat-container');
-
-        userInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                const text = userInput.value.trim();
-                if(!text) return;
-
-                // Add User Message
-                createBubble(text, 'user-msg');
-                userInput.value = "";
-
-                // Generate Reasoned Response
-                setTimeout(() => {
-                    const reply = reasonWithEmotion(text.toLowerCase());
-                    createBubble(reply, 'bot-msg');
-                }, 800);
-            }
-        });
-
-        function createBubble(msg, className) {
-            const div = document.createElement('div');
-            div.className = `chat-bubble ${className}`;
-            div.innerText = msg;
-            chatContainer.appendChild(div);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-        }
-
-        function reasonWithEmotion(input) {
-            // Priority 1: High-Stress/Heavy Emotions
-            if (input.match(/sad|hurt|cry|lonely|fail|awful|hate|bad|difficult|hard|tired/)) {
-                return "I can hear how much you're carrying right now. It makes sense that things feel heavy. I'm just here to sit with you in this—you don't have to put on a brave face for me. 🫂";
-            }
-            // Priority 2: Stress/Anxiety
-            if (input.match(/work|busy|stress|exam|pressure|overwhelmed|too much/)) {
-                return "That sounds like a lot of pressure. It's easy to forget that you're a human being, not a machine. Can we take a second to just acknowledge that you're doing your best? 🌿";
-            }
-            // Priority 3: Joy/Wins
-            if (input.match(/happy|good|great|amazing|won|love|smile|better|best/)) {
-                return "I love that! ✨ Seeing you have a moment of light really makes my day. You deserve to feel this way. What was the best part of it?";
-            }
-            // Neutral
-            return "I'm listening. Tell me more about that—I'm here to understand whatever is on your mind.";
-        }
-
-        // --- 4. App Lifecycle ---
-        window.onload = () => {
-            // Set Greeting
-            const hr = new Date().getHours();
-            const greet = document.getElementById('greet-h');
-            if(hr < 12) greet.innerText = "Good morning.";
-            else if(hr < 18) greet.innerText = "Good afternoon.";
-            else greet.innerText = "Good evening.";
-
-            // Remove Splash
+        function sendMsg() {
+            const input = document.getElementById('user-input');
+            const text = input.value.trim();
+            if(!text) return;
+            addBubble(text, 'user');
+            input.value = "";
             setTimeout(() => {
-                document.getElementById('splash').style.opacity = "0";
-                setTimeout(() => {
-                    document.getElementById('splash').style.display = "none";
-                    document.getElementById('appShell').style.opacity = "1";
-                }, 600);
-            }, 1800);
-        };
+                const reply = reason(text.toLowerCase());
+                addBubble(reply, 'bot');
+            }, 800);
+        }
+
+        function addBubble(msg, side) {
+            const log = document.getElementById('chat-log');
+            const div = document.createElement('div');
+            div.className = `bubble ${side}`;
+            div.innerText = msg;
+            log.appendChild(div);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function reason(input) {
+            if(input.match(/sad|hurt|lonely|tired|fail|hard|difficult|awful|bad|cry/)) {
+                chatMemory.moodScore -= 1;
+                chatMemory.lastTopic = "some heavy emotions";
+                return `I hear the weight in that. It's okay to not be okay, ${userName}. I'm here to sit with you in this. What's the toughest part of it right now?`;
+            }
+            if(input.match(/happy|good|great|amazing|love|win|smile|won/)) {
+                chatMemory.moodScore += 1;
+                chatMemory.lastTopic = "a positive win";
+                return `That's wonderful! ✨ It makes me genuinely happy to see you in this space. Hold onto that light. What was the best part of that moment?`;
+            }
+            if(input.includes("remember") || input.includes("last time")) {
+                return chatMemory.lastTopic ? `Of course. We were talking about ${chatMemory.lastTopic}. How has that been since?` : "I'm listening closely to our talk right now!";
+            }
+            return "I'm following you. Tell me more—I want to understand your perspective better.";
+        }
+
+        function runVibeCheck() {
+            const summary = document.getElementById('vibe-summary');
+            if(chatMemory.moodScore < 0) summary.innerText = "Current Vibe: Reflective & Tender. You've been navigating some heavy thoughts. Remember to be kind to yourself.";
+            else if(chatMemory.moodScore > 0) summary.innerText = "Current Vibe: Bright & Growing. You're focusing on the wins today! Keep protecting that peace.";
+            else summary.innerText = "Current Vibe: Balanced. You're checking in and staying present. That's a win in itself.";
+        }
+
+        function toggleDark() { document.body.classList.toggle('dark-mode'); }
+
+        window.onload = () => {
+            const saved = localStorage.getItem('mindcheck_v5_user');
+            if(saved) { document.getElementById('username').value = saved; login(); }
+        }
+
+        document.getElementById('user-input').addEventListener('keypress', e => { if(e.key === 'Enter') sendMsg(); });
     </script>
 </body>
 </html>
