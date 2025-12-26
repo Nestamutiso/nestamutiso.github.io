@@ -3,190 +3,239 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MindCheck – Mental Health Awareness</title>
+<title>MindCheck Pro</title>
 <style>
+  :root {
+    --primary: #4a6cf7;
+    --bg: #f8f9fa;
+    --card: #ffffff;
+    --text: #2d3436;
+    --good: #4caf50;
+    --okay: #ff9800;
+    --low: #f44336;
+  }
+
   body {
-    font-family: Arial, sans-serif;
-    background: #f4f7fb;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--bg);
     margin: 0;
-    padding: 0;
-    color: #333;
+    color: var(--text);
+    padding-bottom: 70px; /* Space for nav */
   }
+
   header {
-    background: #4a6cf7;
+    background: var(--primary);
     color: white;
-    padding: 20px;
+    padding: 30px 20px;
     text-align: center;
+    border-radius: 0 0 20px 20px;
   }
-  section {
-    padding: 20px;
-    max-width: 600px;
-    margin: auto;
-  }
+
+  .view { display: none; padding: 20px; max-width: 500px; margin: auto; }
+  .view.active { display: block; animation: fadeIn 0.3s; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
   .card {
-    background: white;
-    padding: 15px;
-    border-radius: 10px;
-    margin-bottom: 15px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    transition: transform 0.2s;
+    background: var(--card);
+    padding: 20px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
   }
-  .card:hover { transform: scale(1.02); }
-  button {
-    padding: 10px 15px;
+
+  /* Mood Buttons */
+  .mood-selector { display: flex; justify-content: space-between; gap: 10px; margin: 15px 0; }
+  .mood-btn {
+    flex: 1;
+    padding: 15px 5px;
     border: none;
-    border-radius: 8px;
+    border-radius: 12px;
     cursor: pointer;
-    margin: 5px;
-    font-size: 16px;
-    transition: transform 0.1s;
+    font-size: 14px;
+    font-weight: bold;
+    transition: 0.2s;
   }
-  button:active { transform: scale(0.95); }
-  .good { background: #4caf50; color: white; }
-  .okay { background: #ff9800; color: white; }
-  .low  { background: #f44336; color: white; }
+  .mood-btn:hover { filter: brightness(0.9); }
+  .mood-btn.good { background: #e8f5e9; color: var(--good); }
+  .mood-btn.okay { background: #fff3e0; color: var(--okay); }
+  .mood-btn.low { background: #ffebee; color: var(--low); }
+
+  /* History Grid */
+  .history-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 10px; }
+  .day-dot { height: 35px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 10px; background: #eee; }
+
+  /* Breathing Circle */
+  #circle-container { height: 200px; display: flex; align-items: center; justify-content: center; position: relative; }
   #breathingCircle {
     width: 100px;
     height: 100px;
     border-radius: 50%;
-    background: #4a6cf7;
-    margin: 20px auto;
-    animation: none;
+    background: var(--primary);
+    opacity: 0.7;
+    transition: transform 4s ease-in-out;
   }
-  footer {
-    text-align: center;
-    font-size: 13px;
-    padding: 15px;
-    color: #666;
+  #breathingText { position: absolute; font-weight: bold; color: var(--primary); }
+
+  /* Bottom Nav */
+  nav {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background: white;
+    display: flex;
+    justify-content: space-around;
+    padding: 15px 0;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
   }
+  nav button { background: none; border: none; color: #666; font-size: 12px; cursor: pointer; }
+  nav button.active { color: var(--primary); font-weight: bold; }
+
+  textarea { width: 100%; border: 1px solid #ddd; border-radius: 8px; padding: 10px; box-sizing: border-box; resize: none; }
 </style>
 </head>
 <body>
 
 <header>
-  <h1>MindCheck</h1>
-  <p>Mental Health Awareness & Self-Care</p>
+  <h1 style="margin:0">MindCheck</h1>
+  <p id="header-tip">"Take a deep breath."</p>
 </header>
 
-<section>
-
-  <!-- Mood Check -->
+<div id="home" class="view active">
   <div class="card">
-    <h2>How are you feeling today?</h2>
-    <button class="good" onclick="saveMood('Good')">😊 Good</button>
-    <button class="okay" onclick="saveMood('Okay')">😐 Okay</button>
-    <button class="low" onclick="saveMood('Low')">😞 Low</button>
-    <p id="moodResult"></p>
-    <h3>Past 7 Days:</h3>
-    <ul id="moodHistory"></ul>
+    <h2>Daily Check-in</h2>
+    <div class="mood-selector">
+      <button class="mood-btn good" onclick="saveData('Good', '😊')">Good</button>
+      <button class="mood-btn okay" onclick="saveData('Okay', '😐')">Okay</button>
+      <button class="mood-btn low" onclick="saveData('Low', '😞')">Low</button>
+    </div>
+    <textarea id="journal" rows="3" placeholder="What's on your mind? (Optional)"></textarea>
   </div>
 
-  <!-- Daily Tip -->
   <div class="card">
-    <h2>Wellness Tip</h2>
-    <p id="tip"></p>
-    <button onclick="nextTip()">Next Tip</button>
+    <h3>Weekly Outlook</h3>
+    <div class="history-grid" id="historyGrid"></div>
   </div>
+</div>
 
-  <!-- Breathing Exercise -->
+<div id="breathe" class="view">
+  <div class="card" style="text-align: center;">
+    <h2>Box Breathing</h2>
+    <p>Calm your nervous system.</p>
+    <div id="circle-container">
+      <div id="breathingCircle"></div>
+      <div id="breathingText">Ready?</div>
+    </div>
+    <button onclick="toggleBreathing()" id="breathBtn" style="background:var(--primary); color:white; border:none; padding:10px 30px; border-radius:20px;">Start</button>
+  </div>
+</div>
+
+<div id="help" class="view">
   <div class="card">
-    <h2>60-Second Breathing</h2>
-    <p>Breathe in for 4s, hold 4s, breathe out 6s.</p>
-    <button onclick="startBreathing()">Start</button>
-    <div id="breathingCircle"></div>
-    <p id="breathingText"></p>
+    <h2>Support Hotlines</h2>
+    <p>Speak to someone today:</p>
+    <a href="tel:0722178177" style="display:block; padding:15px; background:#f0f0f0; border-radius:10px; text-decoration:none; color:black; margin-bottom:10px;">📞 Befrienders Kenya: 0722 178 177</a>
+    <a href="tel:1199" style="display:block; padding:15px; background:#f0f0f0; border-radius:10px; text-decoration:none; color:black;">📞 Red Cross: 1199</a>
   </div>
+</div>
 
-  <!-- Share App -->
-  <div class="card">
-    <h2>Share this app</h2>
-    <button onclick="shareApp()">Share via WhatsApp</button>
-  </div>
-
-  <!-- Emergency Info -->
-  <div class="card">
-    <h2>Need Support?</h2>
-    <p>You are not alone.</p>
-    <ul>
-      <li>999 / 112 – Emergency</li>
-      <li>Befrienders Kenya: 0722 178 177</li>
-    </ul>
-  </div>
-
-</section>
-
-<footer>
-  This app is for mental health awareness and self-care education only. It does not replace professional help.
-</footer>
+<nav>
+  <button onclick="showView('home')" id="nav-home" class="active">🏠<br>Home</button>
+  <button onclick="showView('breathe')" id="nav-breathe">🌬️<br>Breathe</button>
+  <button onclick="showView('help')" id="nav-help">❤️<br>Help</button>
+</nav>
 
 <script>
-  // Mood Tracker with History
-  function saveMood(mood) {
-    let moods = JSON.parse(localStorage.getItem("moodHistory")) || [];
-    moods.push({date: new Date().toLocaleDateString(), mood: mood});
-    if (moods.length > 7) moods.shift(); // keep last 7 days
-    localStorage.setItem("moodHistory", JSON.stringify(moods));
-    displayMoodHistory();
+  // Navigation Logic
+  function showView(viewId) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+    document.getElementById(viewId).classList.add('active');
+    document.getElementById('nav-' + viewId).classList.add('active');
   }
 
-  function displayMoodHistory() {
-    const moods = JSON.parse(localStorage.getItem("moodHistory")) || [];
-    document.getElementById("moodHistory").innerHTML = "";
-    moods.forEach(m => {
-      const li = document.createElement("li");
-      li.innerText = `${m.date}: ${m.mood}`;
-      document.getElementById("moodHistory").appendChild(li);
-    });
-    if (moods.length) document.getElementById("moodResult").innerText = "Last mood saved: " + moods[moods.length-1].mood;
+  // Data Logic
+  function saveData(mood, emoji) {
+    const journal = document.getElementById('journal').value;
+    let history = JSON.parse(localStorage.getItem('mindHistory')) || [];
+    const entry = {
+      date: new Date().toLocaleDateString('en-GB', {weekday: 'short'}),
+      mood: mood,
+      emoji: emoji,
+      note: journal,
+      timestamp: new Date().getTime()
+    };
+    
+    history.push(entry);
+    if(history.length > 7) history.shift();
+    localStorage.setItem('mindHistory', JSON.stringify(history));
+    document.getElementById('journal').value = "";
+    renderHistory();
+    alert("Mood logged! Take care of yourself.");
   }
 
-  displayMoodHistory();
-
-  // Daily Tips
-  const tips = [
-    "Drink water and take a short walk today.",
-    "Talk to one person you trust.",
-    "Get at least 7 hours of rest.",
-    "Limit social media for one hour.",
-    "Breathe slowly and relax your shoulders.",
-    "Write down one thing you're grateful for today."
-  ];
-  let tipIndex = Math.floor(Math.random()*tips.length);
-  document.getElementById("tip").innerText = tips[tipIndex];
-
-  function nextTip() {
-    tipIndex = (tipIndex + 1) % tips.length;
-    document.getElementById("tip").innerText = tips[tipIndex];
-  }
-
-  // Breathing Animation
-  function startBreathing() {
-    const circle = document.getElementById("breathingCircle");
-    const text = document.getElementById("breathingText");
-    circle.style.animation = "breathing 14s linear forwards";
-    text.innerText = "Breathe in…";
-    setTimeout(() => text.innerText = "Hold…", 4000);
-    setTimeout(() => text.innerText = "Breathe out…", 8000);
-    setTimeout(() => text.innerText = "Good job 🌱", 14000);
-  }
-
-  const style = document.createElement('style');
-  style.innerHTML = `
-    @keyframes breathing {
-      0% { transform: scale(1); }
-      28% { transform: scale(1.5); } /* breathe in */
-      57% { transform: scale(1.5); } /* hold */
-      100% { transform: scale(1); } /* breathe out */
+  function renderHistory() {
+    const history = JSON.parse(localStorage.getItem('mindHistory')) || [];
+    const grid = document.getElementById('historyGrid');
+    grid.innerHTML = "";
+    
+    // Create 7 empty/filled slots
+    for(let i=0; i<7; i++) {
+      const day = history[i];
+      const dot = document.createElement('div');
+      dot.className = 'day-dot';
+      if(day) {
+        dot.innerText = day.emoji;
+        if(day.mood === 'Good') dot.style.background = '#e8f5e9';
+        if(day.mood === 'Low') dot.style.background = '#ffebee';
+      } else {
+        dot.innerText = "-";
+      }
+      grid.appendChild(dot);
     }
-  `;
-  document.head.appendChild(style);
-
-  // Share App
-  function shareApp() {
-    const url = "https://yourusername.github.io"; // Replace with your live link
-    const text = "Check out MindCheck – Mental Health Awareness App!";
-    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text + " " + url)}`, "_blank");
   }
+
+  // Breathing Logic
+  let breathInterval;
+  let isBreathing = false;
+
+  function toggleBreathing() {
+    const btn = document.getElementById('breathBtn');
+    const circle = document.getElementById('breathingCircle');
+    const text = document.getElementById('breathingText');
+    
+    if (isBreathing) {
+      clearInterval(breathInterval);
+      btn.innerText = "Start";
+      text.innerText = "Ready?";
+      circle.style.transform = "scale(1)";
+      isBreathing = false;
+    } else {
+      isBreathing = true;
+      btn.innerText = "Stop";
+      runBreathingCycle();
+      breathInterval = setInterval(runBreathingCycle, 14000);
+    }
+  }
+
+  function runBreathingCycle() {
+    const circle = document.getElementById('breathingCircle');
+    const text = document.getElementById('breathingText');
+    
+    text.innerText = "Inhale...";
+    circle.style.transform = "scale(1.8)";
+    
+    setTimeout(() => { if(isBreathing) text.innerText = "Hold..."; }, 4000);
+    setTimeout(() => { 
+      if(isBreathing) {
+        text.innerText = "Exhale..."; 
+        circle.style.transform = "scale(1)";
+      }
+    }, 8000);
+  }
+
+  // Initial Load
+  renderHistory();
 </script>
 
 </body>
