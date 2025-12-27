@@ -9,178 +9,210 @@
         :root {
             --primary: #7d5fff; --bg: #fdfbff; --text: #1e272e;
             --card: #ffffff; --bot: #7d5fff; --user: #efedff;
+            --danger: #ff4757; --success: #2ed573;
         }
         body.dark-mode {
             --bg: #121212; --text: #e0e0e0; --card: #1e1e1e;
             --user: #2d2d2d; --bot: #a29bfe;
         }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Outfit', sans-serif; }
-        body { background: var(--bg); margin: 0; color: var(--text); height: 100vh; overflow: hidden; }
 
-        /* --- Login Overlay --- */
-        #login-screen {
-            position: fixed; inset: 0; background: var(--primary); z-index: 9999;
+        /* Essential Mobile Fixes */
+        * { box-sizing: border-box; max-width: 100%; -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            margin: 0; padding: 0; font-family: 'Outfit', sans-serif; 
+            background: var(--bg); color: var(--text); 
+            height: 100vh; width: 100vw; overflow: hidden; 
+        }
+
+        /* --- Login Screen --- */
+        #auth-screen {
+            position: fixed; inset: 0; background: var(--primary); z-index: 10000;
             display: flex; align-items: center; justify-content: center; padding: 20px;
         }
-        .login-box { background: white; padding: 40px; border-radius: 30px; width: 100%; max-width: 350px; text-align: center; }
-        input { width: 100%; padding: 15px; margin: 15px 0; border-radius: 12px; border: 1px solid #ddd; outline: none; }
-        button.main-btn { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; }
+        .auth-card { background: white; padding: 35px; border-radius: 30px; width: 100%; max-width: 350px; text-align: center; }
+        input[type="text"] { width: 100%; padding: 15px; margin: 15px 0; border-radius: 12px; border: 1px solid #ddd; font-size: 16px; outline: none; }
+        .btn-main { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; }
 
-        /* --- App Layout --- */
-        .view { display: none; height: 100vh; flex-direction: column; padding: 20px 20px 100px; overflow-y: auto; }
-        .view.active { display: flex; }
+        /* --- App Structure --- */
+        .app-shell { height: 100vh; display: none; flex-direction: column; }
+        .view { display: none; flex: 1; overflow-y: auto; padding: 20px 20px 100px; width: 100%; }
+        .view.active { display: flex; flex-direction: column; }
 
-        /* --- Chat --- */
-        #chat-log { flex: 1; display: flex; flex-direction: column; gap: 10px; padding-top: 20px; }
-        .bubble { max-width: 80%; padding: 12px 16px; border-radius: 20px; font-size: 15px; line-height: 1.4; }
-        .bot-msg { background: var(--bot); color: white; align-self: flex-start; border-bottom-left-radius: 2px; }
-        .user-msg { background: var(--user); color: var(--text); align-self: flex-end; border-bottom-right-radius: 2px; }
+        header { padding: 20px 0; flex-shrink: 0; }
+        .app-card { background: var(--card); border-radius: 25px; padding: 20px; margin-bottom: 20px; box-shadow: 0 8px 25px rgba(0,0,0,0.05); }
 
-        .input-area { display: flex; gap: 10px; padding: 10px; background: var(--card); border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        #chat-input { flex: 1; border: none; background: transparent; color: var(--text); outline: none; padding: 5px; }
+        /* --- Conversational AI Chat --- */
+        #chat-log { flex: 1; display: flex; flex-direction: column; gap: 12px; margin-bottom: 15px; }
+        .bubble { max-width: 85%; padding: 14px 18px; border-radius: 22px; font-size: 15px; line-height: 1.5; }
+        .bot { background: var(--bot); color: white; align-self: flex-start; border-bottom-left-radius: 4px; }
+        .user { background: var(--user); color: var(--text); align-self: flex-end; border-bottom-right-radius: 4px; }
 
-        /* --- Insights/Calendar --- */
-        .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 15px; }
-        .dot { height: 30px; background: #eee; border-radius: 5px; }
-        .dot.good { background: #2ed573; }
-        .dot.heavy { background: var(--primary); }
+        .input-bar { background: var(--card); padding: 10px; border-radius: 30px; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        #user-input { flex: 1; border: none; background: transparent; color: var(--text); padding: 10px; font-size: 16px; outline: none; }
+
+        /* --- Insights --- */
+        .mood-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 15px; }
+        .day-dot { height: 35px; border-radius: 10px; background: #eee; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #999; }
+        .day-dot.high { background: var(--success); color: white; }
+        .day-dot.low { background: var(--primary); color: white; }
 
         /* --- Navigation --- */
         nav {
-            position: fixed; bottom: 0; left: 0; right: 0; height: 80px;
-            background: #1e272e; display: flex; justify-content: space-around; align-items: center;
+            position: fixed; bottom: 0; left: 0; right: 0; height: 85px;
+            background: #1e272e; display: flex; justify-content: space-around; align-items: center; padding-bottom: 10px;
         }
-        .nav-item { background: none; border: none; color: #808e9b; font-size: 24px; cursor: pointer; padding: 10px; }
-        .nav-item.active { color: white; border-top: 3px solid white; }
+        .nav-link { background: none; border: none; color: #808e9b; font-size: 24px; cursor: pointer; transition: 0.3s; }
+        .nav-link.active { color: white; transform: translateY(-5px); }
     </style>
 </head>
 <body>
 
-    <div id="login-screen">
-        <div class="login-box">
+    <div id="auth-screen">
+        <div class="auth-card">
+            <h1>🌿</h1>
             <h2 style="color:#333">MindCheck</h2>
-            <input type="text" id="user-name" placeholder="Enter your name">
-            <button class="main-btn" onclick="app.login()">Get Started</button>
+            <p style="color:#666">Who's checking in today?</p>
+            <input type="text" id="login-name" placeholder="Your Name">
+            <button class="btn-main" onclick="app.login()">Launch App</button>
         </div>
     </div>
 
-    <div id="view-home" class="view active">
-        <header><h1 id="greet">Hello</h1></header>
-        <div id="chat-log"></div>
-        <div class="input-area">
-            <input type="text" id="chat-input" placeholder="Type a thought..." autocomplete="off">
-            <button onclick="app.send()" style="border:none; background:none; font-size:20px; cursor:pointer;">🚀</button>
-        </div>
-    </div>
+    <div class="app-shell" id="app-shell">
+        
+        <main id="home" class="view active">
+            <header><h1 id="user-greet" style="margin:0">Hello</h1></header>
+            <div id="chat-log"></div>
+            <div class="input-bar">
+                <input type="text" id="user-input" placeholder="What's on your mind?" autocomplete="off">
+                <button onclick="app.send()" style="background:var(--primary); color:white; border:none; width:45px; height:45px; border-radius:50%; font-size:20px; cursor:pointer;">↑</button>
+            </div>
+        </main>
 
-    <div id="view-insights" class="view">
-        <header><h1>Your Vibe</h1></header>
-        <div style="background:var(--card); padding:20px; border-radius:20px; margin-bottom:20px;">
-            <h3>Mood Calendar</h3>
-            <div class="grid" id="calendar-grid">
-                </div>
-        </div>
-        <div id="crisis-alert" style="display:none; background:#ff4757; color:white; padding:20px; border-radius:20px;">
-            <h3>Need Help?</h3>
-            <p>I detected some heavy words. Please call 0722178177.</p>
-        </div>
-    </div>
+        <main id="insights" class="view">
+            <header><h1>Insights</h1></header>
+            <div class="app-card">
+                <h3>Vibe Check</h3>
+                <p id="vibe-text" style="color:#888; font-size: 14px;">Share more thoughts to see your summary.</p>
+                <button class="btn-main" style="padding:10px;" onclick="app.refreshVibe()">Update Summary</button>
+            </div>
+            <div class="app-card">
+                <h3>Mood History</h3>
+                <div class="mood-row" id="mood-calendar"></div>
+            </div>
+            <div id="crisis-card" style="display:none; background:#fff5f5; border: 2px solid var(--danger); padding:20px; border-radius:25px;">
+                <h3 style="color:var(--danger); margin:0;">Emergency</h3>
+                <p style="font-size:13px; color:#333;">Help is available 24/7 in Kenya.</p>
+                <button onclick="window.open('tel:0722178177')" class="btn-main" style="background:var(--danger)">Call 0722 178 177</button>
+            </div>
+        </main>
 
-    <div id="view-settings" class="view">
-        <header><h1>Settings</h1></header>
-        <div style="background:var(--card); padding:20px; border-radius:20px;">
-            <button class="main-btn" onclick="app.toggleDark()" style="margin-bottom:10px;">Toggle Dark Mode</button>
-            <button class="main-btn" onclick="app.logout()" style="background:#ff4757">Logout</button>
-        </div>
-    </div>
+        <main id="settings" class="view">
+            <header><h1>Settings</h1></header>
+            <div class="app-card">
+                <p>Logged in as: <b id="display-user"></b></p>
+                <button class="btn-main" style="margin-bottom:10px;" onclick="app.dark()">Toggle Dark Mode</button>
+                <button class="btn-main" style="background:#eee; color:#333" onclick="location.reload()">Logout</button>
+            </div>
+        </main>
 
-    <nav>
-        <button class="nav-item active" onclick="app.nav('home', this)">🏠</button>
-        <button class="nav-item" onclick="app.nav('insights', this)">📊</button>
-        <button class="nav-item" onclick="app.nav('settings', this)">⚙️</button>
-    </nav>
+        <nav>
+            <button class="nav-link active" onclick="app.tab('home', this)">🏠</button>
+            <button class="nav-link" onclick="app.tab('insights', this)">📊</button>
+            <button class="nav-link" onclick="tab('settings', this)">⚙️</button>
+        </nav>
+    </div>
 
     <script>
-        // Use a single object to prevent "not defined" errors
         const app = {
-            name: "",
-            moods: [],
+            user: "",
+            history: [],
+            score: 0,
             
             login: function() {
-                const val = document.getElementById('user-name').value;
-                if(!val) return alert("Enter name");
-                this.name = val;
-                document.getElementById('login-screen').style.display = 'none';
-                document.getElementById('greet').innerText = "Hi, " + val;
-                this.addBubble("Welcome " + val + ". I'm your thought partner. How is your heart today?", "bot");
+                const name = document.getElementById('login-name').value.trim();
+                if(!name) return alert("Enter name");
+                this.user = name;
+                document.getElementById('auth-screen').style.display = 'none';
+                document.getElementById('app-shell').style.display = 'flex';
+                document.getElementById('user-greet').innerText = "Hi, " + name;
+                document.getElementById('display-user').innerText = name;
+                this.addBubble(`Hey ${name}. I'm your AI thought partner. How are you really feeling? I'm listening.`, 'bot');
+                this.renderCalendar();
             },
 
-            nav: function(viewId, btn) {
-                // Remove active from all views
+            tab: function(id, btn) {
                 document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-                // Show selected view
-                document.getElementById('view-' + viewId).classList.add('active');
-                // Handle Nav buttons
-                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
+                document.getElementById(id).classList.add('active');
                 btn.classList.add('active');
-                if(viewId === 'insights') this.renderCalendar();
             },
 
             send: function() {
-                const input = document.getElementById('chat-input');
+                const input = document.getElementById('user-input');
                 const text = input.value.trim();
                 if(!text) return;
-
-                this.addBubble(text, "user");
+                this.addBubble(text, 'user');
+                this.history.push(text.toLowerCase());
                 input.value = "";
 
-                // Simple AI reasoning
+                // Crisis Check
+                if(text.toLowerCase().match(/kill|suicide|die|hurt myself|danger/)) {
+                    document.getElementById('crisis-card').style.display = 'block';
+                }
+
+                // AI Reasoning
                 setTimeout(() => {
-                    let reply = "Tell me more about that.";
-                    if(text.match(/sad|bad|hard|tired/i)) {
-                        reply = "I hear you. It sounds heavy. I'm right here.";
-                        this.moods.push('heavy');
-                        document.getElementById('crisis-alert').style.display = 'block';
-                    } else if(text.match(/good|happy|win/i)) {
-                        reply = "That's a win! I'm happy for you.";
-                        this.moods.push('good');
-                    }
-                    this.addBubble(reply, "bot");
-                }, 700);
+                    let response = this.reason(text.toLowerCase());
+                    this.addBubble(response, 'bot');
+                }, 800);
             },
 
-            addBubble: function(msg, side) {
+            addBubble: function(txt, side) {
                 const log = document.getElementById('chat-log');
                 const div = document.createElement('div');
-                div.className = side === "bot" ? "bubble bot-msg" : "bubble user-msg";
-                div.innerText = msg;
+                div.className = `bubble ${side}`;
+                div.innerText = txt;
                 log.appendChild(div);
                 log.scrollTop = log.scrollHeight;
             },
 
+            reason: function(input) {
+                const sadPool = ["I hear the weight in that. It's okay to sit with that feeling—you don't have to fix it for me. What's the toughest part today?", "That sounds incredibly draining. I'm right here with you.", "I can feel how much you're carrying. Thank you for being honest with me."];
+                const joyPool = ["I love that for you! ✨ What was the best part of that moment?", "That's a huge win! You deserve every bit of that light.", "Wonderful! What's one thing you're grateful for right now?"];
+                const fallback = ["I see. How are you honestly navigating that in your head?", "Has this been on your mind for a while?", "If you had to describe the vibe of today in one word, what would it be?"];
+
+                if(input.match(/sad|hurt|bad|fail|tired|lonely|cry|heavy/)) { this.score--; return sadPool[Math.floor(Math.random()*3)]; }
+                if(input.match(/happy|good|great|won|win|love|amazing/)) { this.score++; return joyPool[Math.floor(Math.random()*3)]; }
+                
+                return fallback[Math.floor(Math.random()*3)];
+            },
+
+            refreshVibe: function() {
+                const vibe = document.getElementById('vibe-text');
+                if(this.score < 0) vibe.innerText = "Current Vibe: Reflective & Tender. You've been carrying a lot. Be kind to yourself.";
+                else if(this.score > 0) vibe.innerText = "Current Vibe: Radiant & Growing! You're focusing on wins.";
+                else vibe.innerText = "Current Vibe: Balanced. You're staying present.";
+            },
+
             renderCalendar: function() {
-                const grid = document.getElementById('calendar-grid');
-                grid.innerHTML = "";
-                for(let i=0; i<7; i++) {
+                const cal = document.getElementById('mood-calendar');
+                cal.innerHTML = "";
+                for(let i=1; i<=7; i++) {
                     const d = document.createElement('div');
-                    d.className = "dot";
-                    if(this.moods[i] === 'good') d.className = "dot good";
-                    if(this.moods[i] === 'heavy') d.className = "dot heavy";
-                    grid.appendChild(d);
+                    d.className = 'day-dot';
+                    d.innerText = "D" + i;
+                    cal.appendChild(d);
                 }
             },
 
-            toggleDark: function() {
-                document.body.classList.toggle('dark-mode');
-            },
-
-            logout: function() {
-                location.reload();
-            }
+            dark: function() { document.body.classList.toggle('dark-mode'); }
         };
 
-        // Allow Enter key to send
-        document.getElementById('chat-input').addEventListener('keypress', (e) => {
+        // Fix Navigation
+        function tab(id, btn) { app.tab(id, btn); }
+
+        document.getElementById('user-input').addEventListener('keypress', (e) => {
             if(e.key === 'Enter') app.send();
         });
     </script>
